@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Vehicle, VehicleModelSpec } from '../types';
-import { Plus, Edit2, Trash2, X, Check, Save, Download, Upload, Filter, Calendar, CarFront } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Check, Save, Download, Upload, Filter, Calendar, CarFront, Search, RotateCcw, Loader2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 
@@ -34,8 +34,14 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
   const [formData, setFormData] = useState<Omit<Vehicle, 'id'> | Vehicle>(initialFormState);
   
   // Filters
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [dateFrom, setDateFrom] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return d.toISOString().split('T')[0];
+  });
+  const [dateTo, setDateTo] = useState(() => {
+    return new Date().toISOString().split('T')[0];
+  });
   const [colorFilter, setColorFilter] = useState('');
   const [modelFilter, setModelFilter] = useState('');
   
@@ -45,6 +51,9 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
   const [showDeleteSelectedConfirm, setShowDeleteSelectedConfirm] = useState(false);
   const [vehicleToDelete, setVehicleToDelete] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [lastImportedIds, setLastImportedIds] = useState<string[]>([]);
+  const [isUndoing, setIsUndoing] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -256,62 +265,157 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
     fileInputRef.current?.click();
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsImporting(true);
+    await new Promise(resolve => setTimeout(resolve, 50));
+
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
-        const bstr = evt.target?.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
+        const buffer = evt.target?.result;
+        const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws);
+        const rawData = XLSX.utils.sheet_to_json(ws);
         
+        const columnMap: Record<string, string[]> = {
+          'Model': ['model', 'vehicle model', 'vehicle', 'item'],
+          'Chassis Number': ['chassis number', 'chassis no', 'chassis', 'vin', 'chassis #', 'vin number'],
+          'Motor Number': ['motor number', 'motor no', 'motor', 'engine no', 'engine number', 'motor #'],
+          'Production Date': ['production date', 'date', 'mfg date', 'manufacturing date', 'date of production'],
+          'Color': ['color', 'colour', 'paint'],
+          'Remarks': ['remarks', 'notes', 'comment', 'comments', 'description'],
+          'Cost Price': ['cost price', 'cost', 'price', 'amount', 'value'],
+          'Status': ['status', 'state']
+        };
+
+        const data = rawData.map((row: any) => {
+          const cleanRow: any = { batteryNumbers: [] };
+          let batteryIndexMap: {idx: number, val: string}[] = [];
+          
+          for (const rawKey of Object.keys(row)) {
+            const val = typeof row[rawKey] === 'string' ? row[rawKey].trim() : String(row[rawKey]);
+            const normalizedRowKey = rawKey.trim().toLowerCase();
+            
+            if (normalizedRowKey.includes('battery')) {
+               const match = normalizedRowKey.match(/\d+/);
+               const idx = match ? parseInt(match[0], 10) : 999;
+               batteryIndexMap.push({ idx, val });
+               continue;
+            }
+            
+            let matchedKey = rawKey.trim();
+            for (const [standardKey, aliases] of Object.entries(columnMap)) {
+              if (aliases.some(alias => normalizedRowKey.includes(alias))) {
+                matchedKey = standardKey;
+                break;
+              }
+            }
+            cleanRow[matchedKey] = typeof row[rawKey] === 'string' ? row[rawKey].trim() : row[rawKey];
+          }
+          
+          batteryIndexMap.sort((a,b) => a.idx - b.idx);
+          cleanRow.batteryNumbers = batteryIndexMap.map(b => b.val);
+          return cleanRow;
+        });
+
         let importedCount = 0;
-        data.forEach((row: any) => {
-          if (row['Chassis Number'] && row['Model']) {
+        let skippedCount = 0;
+        const newImportedIds: string[] = [];
+        const vehiclesToAdd: any[] = [];
+        
+        for (const row of Object.values(data) as any[]) {
+          const modelVal = row['Model'];
+          let chassisVal = row['Chassis Number'];
+          
+          if (chassisVal && modelVal) {
             let prodDate = new Date().toISOString().split('T')[0];
-            // Format dates well from Excel if possible
             if (row['Production Date']) {
                const parsedD = new Date(row['Production Date']);
-               if (!isNaN(parsedD.getTime())) prodDate = parsedD.toISOString().split('T')[0];
+               if (!isNaN(parsedD.getTime())) {
+                   const z = parsedD.getTimezoneOffset() * 60000;
+                   const correctDate = new Date(parsedD.getTime() - z);
+                   prodDate = correctDate.toISOString().split('T')[0];
+               }
             }
 
-            onAddVehicle({
-              id: Date.now().toString() + Math.random().toString(36).substring(7),
-              model: String(row['Model']),
-              chassisNumber: String(row['Chassis Number']),
-              motorNumber: row['Motor Number'] ? String(row['Motor Number']) : '',
-              batteryNumbers: [],
-              productionDate: prodDate,
-              color: row['Color'] ? String(row['Color']) : 'Red',
-              remarks: row['Remarks'] ? String(row['Remarks']) : '',
-              costPrice: row['Cost Price'] ? Number(row['Cost Price']) : '',
-              status: row['Status'] === 'Sold' ? 'Sold' : 'In Stock'
+            const newId = Date.now().toString() + Math.random().toString(36).substring(7);
+            vehiclesToAdd.push({
+                id: newId,
+                model: String(modelVal),
+                chassisNumber: String(chassisVal),
+                motorNumber: row['Motor Number'] ? String(row['Motor Number']) : '',
+                batteryNumbers: row.batteryNumbers || [],
+                productionDate: prodDate,
+                color: row['Color'] ? String(row['Color']) : 'Red',
+                remarks: row['Remarks'] ? String(row['Remarks']) : '',
+                costPrice: row['Cost Price'] ? Number(row['Cost Price']) : '',
+                status: row['Status'] === 'Sold' ? 'Sold' : 'In Stock'
             });
-            importedCount++;
+            newImportedIds.push(newId);
+          } else {
+             skippedCount++;
           }
-        });
-        alert(`Successfully imported ${importedCount} vehicles!`);
+        }
+        
+        // Chunk processing for speed
+        const chunkSize = 25;
+        for (let i = 0; i < vehiclesToAdd.length; i += chunkSize) {
+            const chunk = vehiclesToAdd.slice(i, i + chunkSize);
+            await Promise.all(chunk.map(v => onAddVehicle(v)));
+            importedCount += chunk.length;
+        }
+
+        setLastImportedIds(prev => [...prev, ...newImportedIds]);
+        alert(`Successfully imported ${importedCount} vehicles!${skippedCount > 0 ? ` Skipped ${skippedCount} items with missing Model or Chassis Number.` : ''}`);
       } catch (error) {
         console.error("Error importing file", error);
         alert('Failed to parse the file. Please ensure it matches the professional export format.');
+      } finally {
+        setIsImporting(false);
       }
     };
-    reader.readAsBinaryString(file);
+    reader.onerror = () => setIsImporting(false);
+    reader.readAsArrayBuffer(file);
     e.target.value = ''; // Reset input
+  };
+  
+  const handleUndoImport = async () => {
+    if (lastImportedIds.length === 0) return;
+    if (window.confirm(`Are you sure you want to undo the last import? This will delete ${lastImportedIds.length} newly imported vehicles and restore their inventory.`)) {
+      setIsUndoing(true);
+      try {
+        await Promise.all(lastImportedIds.map(id => onDeleteVehicle(id)));
+        setLastImportedIds([]);
+        alert('Undo successful! Vehicles and inventory restored.');
+      } catch (err: any) {
+        alert('Failed to undo import completely: ' + err.message);
+      } finally {
+        setIsUndoing(false);
+      }
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Vehicle Production</h2>
-          <p className="text-slate-500 mt-1">Manage e-rickshaw manufacturing records and stock status.</p>
+    <div className="space-y-6 font-sans">
+      
+      {isImporting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+           <div className="bg-white p-6 rounded-md shadow-xl flex flex-col items-center gap-4 max-w-sm w-full mx-4">
+              <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+              <div className="text-center">
+                 <h3 className="text-lg font-bold text-slate-800">Importing Vehicles...</h3>
+                 <p className="text-sm text-slate-500 mt-1">Please wait while verifying stock and allocating inventory. This might take a few moments for large files.</p>
+              </div>
+           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+      )}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-300 pb-2">
+        <h2 className="text-lg font-bold text-[#006699] uppercase tracking-wide">Vehicle Production</h2>
+        <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
           <input 
             type="file" 
             accept=".xlsx, .xls" 
@@ -319,28 +423,36 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
             onChange={handleImport} 
             className="hidden" 
           />
+                    {lastImportedIds.length > 0 && canAdd && (
+            <button
+               onClick={handleUndoImport}
+               disabled={isUndoing}
+               className={`px-4 py-1 text-[13px] font-bold border rounded-sm transition-colors shadow-sm flex items-center gap-1.5 ${isUndoing ? 'bg-slate-200 text-slate-500' : 'bg-orange-100 border-orange-300 text-orange-700 hover:bg-orange-200'}`}
+            >
+               <RotateCcw className="w-3.5 h-3.5" />
+               {isUndoing ? 'Undoing...' : 'Undo Import'}
+            </button>
+          )}
           {canAdd && (
             <button
               onClick={handleImportClick}
-              className="flex items-center px-4 py-2 border border-slate-300 text-slate-700 bg-white rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium"
+
+              className="px-4 py-1 bg-[#e0e0e0] border border-slate-400 text-slate-800 hover:bg-[#d0d0d0] transition-colors text-[13px] font-medium"
             >
-              <Upload className="w-4 h-4 mr-2" />
               Import
             </button>
           )}
           <button
             onClick={handleExport}
-            className="flex items-center px-4 py-2 border border-slate-300 text-slate-700 bg-white rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium"
+            className="px-4 py-1 bg-[#e0e0e0] border border-slate-400 text-slate-800 hover:bg-[#d0d0d0] transition-colors text-[13px] font-medium"
           >
-            <Download className="w-4 h-4 mr-2" />
             Export
           </button>
           {!isFormOpen && canAdd && (
             <button
               onClick={() => setIsFormOpen(true)}
-              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium"
+              className="px-4 py-1 bg-[#e0e0e0] border border-slate-400 text-slate-800 hover:bg-[#d0d0d0] transition-colors text-[13px] font-medium"
             >
-              <Plus className="w-4 h-4 mr-2" />
               Add New Vehicle
             </button>
           )}
@@ -348,91 +460,121 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
       </div>
 
       {!isFormOpen && (
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 items-end">
-          <div className="flex-1 space-y-1 w-full relative">
-            <label className="text-xs font-medium text-slate-600">From Date</label>
-            <div className="relative">
-              <Calendar className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+        <div className="bg-[#f0f0f0] p-3 border border-slate-300 flex flex-wrap gap-x-6 gap-y-3 items-end relative">
+          <div className="flex flex-col relative w-fit">
+            <label className="text-[#cc0000] text-[11px] mb-1">FROM DATE</label>
+            <div className="flex relative">
+              <input 
+                type="date" 
+                value={dateFrom} 
+                onChange={e => setDateFrom(e.target.value)} 
+                className="w-[140px] px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-8 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10 bg-white" 
+              />
+              <div className="absolute right-0 top-0 bottom-0 w-[30px] flex items-center justify-center bg-[#f0f0f0] border-l border-slate-300 pointer-events-none rounded-r-sm z-20">
+                <Calendar className="w-4 h-4 text-rose-600 fill-slate-200" />
+              </div>
             </div>
           </div>
-          <div className="flex-1 space-y-1 w-full relative">
-            <label className="text-xs font-medium text-slate-600">To Date</label>
-            <div className="relative">
-              <Calendar className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+          <div className="flex flex-col relative w-fit">
+            <label className="text-[#cc0000] text-[11px] mb-1">TO DATE</label>
+            <div className="flex relative">
+              <input 
+                type="date" 
+                value={dateTo} 
+                onChange={e => setDateTo(e.target.value)} 
+                className="w-[140px] px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-8 [&::-webkit-calendar-picker-indicator]:cursor-pointer z-10 bg-white" 
+              />
+              <div className="absolute right-0 top-0 bottom-0 w-[30px] flex items-center justify-center bg-[#f0f0f0] border-l border-slate-300 pointer-events-none rounded-r-sm z-20">
+                <Calendar className="w-4 h-4 text-rose-600 fill-slate-200" />
+              </div>
             </div>
           </div>
-          <div className="flex-1 space-y-1 w-full relative">
-            <label className="text-xs font-medium text-slate-600">Color</label>
-            <div className="relative">
-              <Filter className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <select value={colorFilter} onChange={e => setColorFilter(e.target.value)} className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
-                <option value="">All Colors</option>
+          <div className="flex flex-col relative w-fit justify-end">
+            <button className="px-2 py-0.5 h-[26px] font-sans text-[12px] bg-gradient-to-b from-[#e4e4e4] to-[#c8c8c8] border border-slate-400 text-slate-900 hover:from-[#d4d4d4] hover:to-[#b8b8b8] transition-colors shadow-sm whitespace-nowrap mb-0.5">
+              Get Details
+            </button>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-[#cc0000] text-[11px] mb-1">COLOR</label>
+            <div className="flex">
+              <select 
+                value={colorFilter} 
+                onChange={e => setColorFilter(e.target.value)} 
+                className="w-[130px] px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
+              >
+                <option value="">-ALL-</option>
                 {Array.from(new Set(vehicles.map(v => v.color))).sort().map(color => (
                   <option key={color} value={color}>{color}</option>
                 ))}
               </select>
             </div>
           </div>
-          <div className="flex-1 space-y-1 w-full relative">
-            <label className="text-xs font-medium text-slate-600">Model</label>
-            <input type="text" placeholder="Search Model..." value={modelFilter} onChange={e => setModelFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+          <div className="flex flex-col border-r border-slate-300 pr-4">
+            <label className="text-[#cc0000] text-[11px] mb-1">MODEL / SEARCH</label>
+            <div className="flex h-[28px]">
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                value={modelFilter} 
+                onChange={e => setModelFilter(e.target.value)} 
+                className="w-[160px] px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400" 
+              />
+              <button className="bg-[#3b5998] border border-[#3b5998] text-white px-2.5 rounded-sm hover:bg-[#2d4373] ml-1 flex items-center justify-center shadow-sm">
+                <Search className="w-3.5 h-3.5 font-bold" />
+              </button>
+            </div>
           </div>
-          {(dateFrom || dateTo || colorFilter || modelFilter) && (
-            <button onClick={() => { setDateFrom(''); setDateTo(''); setColorFilter(''); setModelFilter(''); }} className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
-              Clear Filters
-            </button>
-          )}
+          <div className="flex flex-col justify-end">
+             <button 
+                onClick={() => { setDateFrom(''); setDateTo(''); setColorFilter(''); setModelFilter(''); }}
+                title="Reset Filters"
+                className="h-[28px] w-[28px] mb-0.5 rounded-full border border-slate-300 bg-white flex items-center justify-center text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors shadow-sm group"
+              >
+                <RotateCcw className="w-3.5 h-3.5 group-hover:-rotate-90 transition-transform duration-300" />
+             </button>
+          </div>
         </div>
       )}
 
       {isFormOpen && (
-        <div className="bg-white rounded-[16px] border border-[var(--color-border)] shadow-sm hover:shadow-md transition-all overflow-hidden relative group">
-          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-500">
-            <CarFront className="w-24 h-24" />
-          </div>
-          <div className="p-5 border-b border-slate-100 bg-white flex justify-between items-center relative z-10">
-            <h3 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
-              <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-md">
-                <Plus className="w-4 h-4" />
-              </div>
-              {editingId ? 'Edit Vehicle Entry' : 'Add New Vehicle'}
+        <div className="bg-white border border-slate-300 shadow-sm text-[13px] font-sans rounded-none">
+          <div className="bg-[#dcdcdc] px-3 py-1.5 border-b border-slate-300 flex justify-between items-center">
+            <h3 className="font-bold text-slate-700 uppercase tracking-normal">
+              {editingId ? 'Edit Vehicle Entry' : 'Vehicle Details'}
             </h3>
-            <button onClick={handleCancelIntent} className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-lg">
-              <X className="w-5 h-5" />
+            <button onClick={handleCancelIntent} className="text-slate-500 hover:text-red-600 transition-colors">
+              <X className="w-4 h-4" />
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="p-6 relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <form onSubmit={handleSubmit} className="p-4 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-4">
               
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Vehicle Model</label>
+              <div className="flex flex-col">
+                <label className="text-[#cc0000] mb-1 font-medium">VEHICLE MODEL</label>
                 <select
                   name="model"
                   required
                   value={formData.model}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-2 py-1 border border-slate-300 focus:outline-none focus:border-blue-400 bg-white"
                 >
-                  <option value="" disabled>Select a model</option>
+                  <option value="" disabled>-SELECT-</option>
                   {Array.from(new Set(vehicleModels.map(m => m.name))).map(modelName => (
                     <option key={modelName} value={modelName}>{modelName}</option>
                   ))}
-                  {/* Provide fallback if list is entirely empty, or Pick Electric hardcode just in case? If the prompt says "which is added in the vehicle specifications by hand that vehicles should only showing", removing "Pick Electric" from hardcoded list is appropriate. */}
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Color</label>
+              <div className="flex flex-col">
+                <label className="text-[#cc0000] mb-1 font-medium">COLOR</label>
                 <select
                   name="color"
                   required
                   value={formData.color}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-2 py-1 border border-slate-300 focus:outline-none focus:border-blue-400 bg-white"
                 >
-                  <option value="" disabled>Select a color</option>
+                  <option value="" disabled>-SELECT-</option>
                   {(() => {
                      const colors = Array.from(new Set(vehicleModels.filter(m => m.name === formData.model && m.color).map(m => m.color as string)));
                      if (colors.length > 0) {
@@ -450,128 +592,124 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Chassis Number</label>
+              <div className="flex flex-col">
+                <label className="text-slate-600 mb-1 font-medium uppercase">Chassis Number</label>
                 <input
                   type="text"
                   name="chassisNumber"
                   required
                   value={formData.chassisNumber}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. CHK123456"
+                  className="w-full px-2 py-1 border border-slate-300 focus:outline-none focus:border-blue-400"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Motor Number</label>
+              <div className="flex flex-col">
+                <label className="text-slate-600 mb-1 font-medium uppercase">Motor Number</label>
                 <input
                   type="text"
                   name="motorNumber"
                   required
                   value={formData.motorNumber}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. MOT789012"
+                  className="w-full px-2 py-1 border border-slate-300 focus:outline-none focus:border-blue-400"
                 />
               </div>
 
-              <div className="col-span-full">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-slate-700">Battery Serial Numbers</label>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {(formData.batteryNumbers || []).map((num, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        required
-                        value={num}
-                        onChange={(e) => {
-                          const arr = [...(formData.batteryNumbers || [])];
-                          arr[idx] = e.target.value.toUpperCase();
-                          setFormData(prev => ({ ...prev, batteryNumbers: arr }));
-                        }}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder={`Battery ${idx + 1} Number`}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Production Date</label>
+              <div className="flex flex-col">
+                <label className="text-slate-600 mb-1 font-medium uppercase">Production Date</label>
                 <input
                   type="date"
                   name="productionDate"
                   required
                   value={formData.productionDate}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 content-center"
+                  className="w-full px-2 py-1 border border-slate-300 focus:outline-none focus:border-blue-400"
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Remarks</label>
-                <input
-                  type="text"
-                  name="remarks"
-                  value={formData.remarks || ''}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Any extra remarks..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Cost Price (₹)</label>
+              <div className="flex flex-col">
+                <label className="text-slate-600 mb-1 font-medium uppercase">Cost Price (₹)</label>
                 <input
                   type="number" step="0.01"
                   name="costPrice"
                   required
                   value={formData.costPrice}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. 105000"
+                  className="w-full px-2 py-1 border border-slate-300 focus:outline-none focus:border-blue-400"
                 />
               </div>
 
+              <div className="flex flex-col md:col-span-2">
+                <label className="text-slate-600 mb-1 font-medium uppercase">Remarks</label>
+                <input
+                  type="text"
+                  name="remarks"
+                  value={formData.remarks || ''}
+                  onChange={handleInputChange}
+                  className="w-full px-2 py-1 border border-slate-300 focus:outline-none focus:border-blue-400"
+                />
+              </div>
+
+              {(formData.batteryNumbers && formData.batteryNumbers.length > 0) && (
+                <div className="md:col-span-4 bg-[#f8f8f8] p-3 border border-slate-200 mt-2">
+                  <label className="block text-slate-600 mb-2 font-medium uppercase border-b border-slate-300 pb-1">Battery Serial Numbers</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-3">
+                    {(formData.batteryNumbers || []).map((num, idx) => (
+                      <div key={idx} className="flex flex-col">
+                        <label className="text-slate-500 mb-1 text-[11px] uppercase">Battery {idx + 1}</label>
+                        <input
+                          type="text"
+                          required
+                          value={num}
+                          onChange={(e) => {
+                            const arr = [...(formData.batteryNumbers || [])];
+                            arr[idx] = e.target.value.toUpperCase();
+                            setFormData(prev => ({ ...prev, batteryNumbers: arr }));
+                          }}
+                          className="w-full px-2 py-1 border border-slate-300 focus:outline-none focus:border-blue-400"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             
-            <div className="mt-6 flex justify-end space-x-3 pt-6 border-t border-slate-100">
+            <div className="flex space-x-2 pt-4">
+              <button
+                type="submit"
+                className="px-4 py-1.5 bg-[#e0e0e0] border border-slate-400 text-slate-800 hover:bg-[#d0d0d0] transition-colors font-sans text-[13px]"
+              >
+                {editingId ? 'Update' : 'Submit'}
+              </button>
               <button
                 type="button"
                 onClick={handleCancelIntent}
-                className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium text-sm"
+                className="px-4 py-1.5 bg-[#e0e0e0] border border-slate-400 text-slate-800 hover:bg-[#d0d0d0] transition-colors font-sans text-[13px]"
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {editingId ? 'Update Vehicle' : 'Save Vehicle'}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      <div className="bg-white rounded-[16px] border border-[var(--color-border)] shadow-[var(--shadow-sm)] overflow-hidden">
-        <div className="p-5 border-b border-slate-100 bg-white flex justify-between items-center min-h-[72px]">
-          <h3 className="font-bold text-slate-800 tracking-tight text-lg">Produced Vehicles <span className="ml-2 text-sm font-medium px-2 py-1 bg-slate-100 text-slate-600 rounded-md">{filteredVehicles.length}</span></h3>
+      <div className="bg-white border border-slate-300 shadow-sm font-sans mb-10 overflow-hidden">
+        <div className="bg-[#dcdcdc] px-3 py-2 border-b border-slate-300 flex justify-between items-center">
+          <h3 className="font-bold text-slate-700 uppercase tracking-normal text-sm flex items-center">
+            Produced Vehicles <span className="ml-2 text-xs font-normal">({filteredVehicles.length})</span>
+          </h3>
           <div className="flex gap-2">
             {canReduce && (
               <>
                 <button
                   onClick={handleMarkAsSold}
                   disabled={selectedVehicles.length === 0}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors border min-w-[130px] ${
+                  className={`px-3 py-1 font-sans text-xs uppercase border ${
                     selectedVehicles.length > 0
-                      ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200'
-                      : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed opacity-70'
+                      ? 'bg-[#e0e0e0] border-slate-400 text-slate-800 hover:bg-[#d0d0d0]'
+                      : 'bg-[#f0f0f0] border-slate-300 text-slate-400 cursor-not-allowed'
                   }`}
                 >
                   Mark as Sold
@@ -579,13 +717,13 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
                 <button
                   onClick={handleDeleteSelected}
                   disabled={selectedVehicles.length === 0}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center border min-w-[100px] ${
+                  className={`px-3 py-1 font-sans text-xs uppercase flex items-center border ${
                     selectedVehicles.length > 0
-                      ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200'
-                      : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed opacity-70'
+                      ? 'bg-[#e0e0e0] border-slate-400 text-slate-800 hover:bg-[#d0d0d0]'
+                      : 'bg-[#f0f0f0] border-slate-300 text-slate-400 cursor-not-allowed'
                   }`}
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
+                  <Trash2 className="w-3 h-3 mr-1" />
                   Delete
                 </button>
               </>
@@ -593,28 +731,28 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider bg-slate-50/80 border-b border-slate-100">
+          <table className="w-full text-[12px] text-left border-collapse">
+            <thead className="bg-[#ececec] border-b border-slate-300 text-slate-600 font-bold uppercase">
               <tr>
-                <th className="px-4 py-3">
+                <th className="px-3 py-2 border-r border-slate-300 w-10">
                   <input
                     type="checkbox"
-                    className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer"
+                    className="cursor-pointer"
                     checked={filteredVehicles.length > 0 && selectedVehicles.length === filteredVehicles.length}
                     onChange={handleSelectAll}
                   />
                 </th>
-                <th className="px-3 py-3 w-10 text-center font-medium">S.No</th>
-                <th className="px-4 py-3 font-medium">Chassis No</th>
-                <th className="px-4 py-3 font-medium">Model</th>
-                <th className="px-4 py-3 font-medium">Batteries</th>
-                <th className="px-4 py-3 font-medium">Color</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium text-right">Actions</th>
+                <th className="px-3 py-2 border-r border-slate-300 w-10 text-center">S.No</th>
+                <th className="px-3 py-2 border-r border-slate-300">Chassis No</th>
+                <th className="px-3 py-2 border-r border-slate-300">Model</th>
+                <th className="px-3 py-2 border-r border-slate-300">Batteries</th>
+                <th className="px-3 py-2 border-r border-slate-300">Color</th>
+                <th className="px-3 py-2 border-r border-slate-300">Date</th>
+                <th className="px-3 py-2 border-r border-slate-300">Status</th>
+                <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {filteredVehicles.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="px-4 py-8 text-center text-slate-500">
@@ -639,60 +777,48 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
                   return (
                     <tr 
                       key={vehicle.id} 
-                      className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
+                      className="hover:bg-slate-50 transition-colors group"
                       onClick={(e) => {
                         if ((e.target as HTMLElement).closest('input, button')) return;
                         setSelectedVehicleDetails(vehicle);
                       }}
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-3 py-2 border-r border-slate-300 w-10 text-center">
                         <input
                           type="checkbox"
-                          className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                          className="cursor-pointer"
                           checked={selectedVehicles.includes(vehicle.id)}
                           onChange={() => handleSelectVehicle(vehicle.id)}
                         />
                       </td>
-                      <td className="px-3 py-3 text-center text-slate-400 font-mono text-xs">{index + 1}</td>
-                      <td className="px-4 py-3 font-medium text-slate-800 font-mono tracking-tight">{vehicle.chassisNumber}</td>
-                      <td className="px-4 py-3 font-medium text-slate-700">{vehicle.model}</td>
-                      <td className="px-4 py-3 text-slate-600">
-                        <div className="font-medium text-slate-700">
-                          {vehicle.batteryNumbers?.length ? batteryName : 'None'}
-                        </div>
+                      <td className="px-3 py-2 border-r border-slate-300 text-center text-slate-600">{index + 1}</td>
+                      <td className="px-3 py-2 border-r border-slate-300 text-slate-800">{vehicle.chassisNumber}</td>
+                      <td className="px-3 py-2 border-r border-slate-300 text-slate-800">{vehicle.model}</td>
+                      <td className="px-3 py-2 border-r border-slate-300 text-slate-600 max-w-[200px] truncate" title={vehicle.batteryNumbers?.filter(b => !!b).join(', ')}>
+                        {vehicle.batteryNumbers?.filter(b => !!b).length 
+                           ? vehicle.batteryNumbers.filter(b => !!b).join(', ') 
+                           : (vehicle.batteryNumbers?.length ? batteryName : 'None')}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center">
-                            <span 
-                              className="w-2.5 h-2.5 rounded-full mr-2 shadow-sm border border-slate-200"
-                              style={{ backgroundColor: vehicle.color.toLowerCase() }}
-                            ></span>
-                            <span className="font-medium text-slate-700">{vehicle.color}</span>
-                          </div>
+                      <td className="px-3 py-2 border-r border-slate-300">
+                        <div className="flex flex-col">
+                          <span className="text-slate-800">{vehicle.color}</span>
                           {vehicle.remarks && (
-                            <div className="text-[10px] text-slate-500 italic max-w-[120px] truncate" title={vehicle.remarks}>
-                              {vehicle.remarks}
-                            </div>
+                            <span className="text-[10px] text-slate-500 italic truncate max-w-[120px]">{vehicle.remarks}</span>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-500 text-xs font-medium">{new Date(vehicle.productionDate).toLocaleDateString()}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider ${
-                          vehicle.status === 'In Stock' 
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' 
-                            : 'bg-indigo-50 text-indigo-700 border border-indigo-100'
-                        }`}>
+                      <td className="px-3 py-2 border-r border-slate-300 text-slate-600">{new Date(vehicle.productionDate).toLocaleDateString()}</td>
+                      <td className="px-3 py-2 border-r border-slate-300">
+                        <span className="text-slate-800 font-bold uppercase">
                           {vehicle.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <td className="px-3 py-2">
+                        <div className="flex items-center space-x-2">
                           {canUpdate && (
                             <button
                               onClick={() => handleEdit(vehicle)}
-                              className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
+                              className="text-blue-600 hover:text-blue-800"
                               title="Edit"
                             >
                               <Edit2 className="w-4 h-4" />
@@ -701,7 +827,7 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
                           {canReduce && (
                             <button
                               onClick={() => setVehicleToDelete(vehicle.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition-colors"
+                              className="text-red-600 hover:text-red-800"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -770,7 +896,7 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
 
         return (
           <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300 flex flex-col max-h-[90vh]">
+            <div className="bg-white rounded-sm w-full max-w-2xl border border-slate-400 overflow-hidden shadow-md animate-in slide-in-from-bottom-4 duration-300 flex flex-col max-h-[90vh]">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 shrink-0">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
@@ -807,12 +933,12 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
                 <div className="mb-8">
                   <h4 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">Vehicle Identification</h4>
                   <ul className="space-y-3">
-                    <li className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                    <li className="flex items-center justify-between bg-[#f8f8f8] py-1.5 px-3 border border-slate-300 shadow-sm rounded-sm">
                       <span className="font-medium text-slate-700">Chassis Number</span>
                       <span className="font-mono font-bold text-slate-800">{v.chassisNumber}</span>
                     </li>
                     {v.motorNumber && (
-                      <li className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                      <li className="flex items-center justify-between bg-[#f8f8f8] py-1.5 px-3 border border-slate-300 shadow-sm rounded-sm">
                         <span className="font-medium text-slate-700">Motor Number</span>
                         <span className="font-mono font-bold text-slate-800">{v.motorNumber}</span>
                       </li>
@@ -825,7 +951,7 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
                     <h4 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">Battery Information</h4>
                     <ul className="space-y-3">
                       {v.batteryNumbers.map((num, i) => (
-                        <li key={i} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <li key={i} className="flex items-center justify-between bg-[#f8f8f8] py-1.5 px-3 border border-slate-300 shadow-sm rounded-sm">
                           <span className="font-medium text-slate-700">{batteryName} Serial {i + 1}</span>
                           <span className="font-mono font-bold text-indigo-600">{num}</span>
                         </li>
@@ -837,7 +963,7 @@ export function VehicleProduction({ vehicles, vehicleModels, onAddVehicle, onUpd
                 {modelSpec && modelSpec.bom && modelSpec.bom.length > 0 && (
                   <div>
                     <h4 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 mb-4">Bill of Materials Used</h4>
-                    <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+                    <div className="border border-slate-300">
                       <table className="w-full text-sm text-left">
                         <thead className="bg-slate-50 border-b border-slate-200">
                           <tr>

@@ -94,29 +94,29 @@ export function Reports({ vehicles, sales }: ReportsProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+    <div className="space-y-6 font-sans">
+      <div className="bg-white rounded-sm shadow-sm border border-slate-300 p-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between space-y-4 md:space-y-0 text-sm">
           <div className="flex flex-wrap gap-4 items-end">
             <div>
               <label className="block text-slate-500 mb-1">From Date</label>
-              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="border-slate-300 rounded-lg p-2 border" />
+              <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="border-slate-300 rounded-sm p-2 border" />
             </div>
             <div>
               <label className="block text-slate-500 mb-1">To Date</label>
-              <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="border-slate-300 rounded-lg p-2 border" />
+              <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="border-slate-300 rounded-sm p-2 border" />
             </div>
             <div>
               <label className="block text-slate-500 mb-1">Model Filter</label>
-              <input type="text" placeholder="e.g. Pick Electric" value={modelFilter} onChange={e => setModelFilter(e.target.value)} className="border-slate-300 rounded-lg p-2 border" />
+              <input type="text" placeholder="e.g. Pick Electric" value={modelFilter} onChange={e => setModelFilter(e.target.value)} className="border-slate-300 rounded-sm p-2 border" />
             </div>
           </div>
           
           <div className="flex space-x-3">
-            <button onClick={exportAsExcel} className="flex items-center px-4 py-2 border border-slate-300 text-slate-700 bg-white rounded-lg hover:bg-slate-50 transition-colors">
+            <button onClick={exportAsExcel} className="flex items-center px-4 py-2 border border-slate-300 text-slate-700 bg-white rounded-sm hover:bg-slate-50 transition-colors">
               <Download className="w-4 h-4 mr-2" /> Export CSV
             </button>
-            <button onClick={() => window.print()} className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button onClick={() => window.print()} className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors">
               <Printer className="w-4 h-4 mr-2" /> Print PDF
             </button>
           </div>
@@ -124,22 +124,22 @@ export function Reports({ vehicles, sales }: ReportsProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-sm shadow-sm border border-slate-300 p-6">
           <h3 className="text-slate-500 text-sm font-medium mb-1">Total Production</h3>
           <p className="text-3xl font-bold text-slate-800">{totalProduction} Unit(s)</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-sm shadow-sm border border-slate-300 p-6">
           <h3 className="text-slate-500 text-sm font-medium mb-1">Total Revenue</h3>
           <p className="text-3xl font-bold text-green-600">₹{totalSalesRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-sm shadow-sm border border-slate-300 p-6">
           <h3 className="text-slate-500 text-sm font-medium mb-1">Total Profit (Est)</h3>
           <p className="text-3xl font-bold text-blue-600">₹{totalProfit.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-sm shadow-sm border border-slate-300 p-6">
           <h3 className="text-lg font-semibold text-slate-800 mb-6 font-sans">Monthly Production (Units)</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -154,7 +154,7 @@ export function Reports({ vehicles, sales }: ReportsProps) {
           </div>
         </div>
         
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div className="bg-white rounded-sm shadow-sm border border-slate-300 p-6">
           <h3 className="text-lg font-semibold text-slate-800 mb-6 font-sans">Monthly Sales Revenue (₹)</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">

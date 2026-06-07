@@ -67,47 +67,55 @@ export default function App() {
   const [lastStockUpdate, setLastStockUpdate] = useState<number | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (!currentUser) {
         setUserRole(null);
         setIsAuthReady(true);
+      }
+      setIsAuthReady(true);
+    });
+
+    return () => {
+      unsubscribeAuth();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    
+    // Listen for current user role changes
+    const docRef = doc(db, 'users', user.uid);
+    const unsubUser = onSnapshot(docRef, async (docSnap) => {
+      if (docSnap.exists()) {
+        const roleData = { id: docSnap.id, ...docSnap.data() } as UserRole;
+        setUserRole(roleData);
+        // Default to an allowed view if dashboard is not allowed and not admin
+        if (roleData.role !== 'admin' && !roleData.permissions.includes('dashboard') && roleData.permissions.length > 0 && currentView === 'dashboard') {
+           setCurrentView(roleData.permissions[0]);
+        }
       } else {
-        try {
-          const docRef = doc(db, 'users', currentUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const roleData = { id: docSnap.id, ...docSnap.data() } as UserRole;
-            setUserRole(roleData);
-            // Default to an allowed view if dashboard is not allowed and not admin
-            if (roleData.role !== 'admin' && !roleData.permissions.includes('dashboard') && roleData.permissions.length > 0) {
-               setCurrentView(roleData.permissions[0]);
-            }
-          } else {
-            // First time logic, if email is the hardcoded admin email, let's create the admin user doc
-            if (currentUser.email && currentUser.email.indexOf('admin') !== -1) {
-              const newAdmin: Omit<UserRole, 'id'> = {
-                email: currentUser.email.split('@')[0], // Extract just the pseudo username
-                role: 'admin',
-                permissions: []
-              };
-              await setDoc(docRef, newAdmin);
-              setUserRole({ id: currentUser.uid, ...newAdmin });
-            } else {
-               // Normal user without a document - should be logged out
-               auth.signOut();
-               alert("Your account does not have an access profile yet. Please contact your administrator.");
-            }
-          }
-        } catch (e: any) {
-           console.error(e);
-        } finally {
-           setIsAuthReady(true);
+        // First time logic, if email is the hardcoded admin email, let's create the admin user doc
+        if (user.email && user.email.indexOf('admin') !== -1) {
+          const newAdmin: Omit<UserRole, 'id'> = {
+            email: user.email.split('@')[0], // Extract just the pseudo username
+            role: 'admin',
+            permissions: []
+          };
+          await setDoc(docRef, newAdmin);
+          setUserRole({ id: user.uid, ...newAdmin });
+        } else {
+           // Normal user without a document - should be logged out
+           auth.signOut();
+           alert("Your account does not have an access profile yet. Please contact your administrator.");
         }
       }
     });
-    return unsubscribe;
-  }, []);
+
+    return () => {
+      unsubUser();
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -235,12 +243,12 @@ export default function App() {
       });
 
       // Find the corresponding model spec
-      let modelSpec = vehicleModels.find(m => m.name === vehicle.model && m.color === vehicle.color);
+      let modelSpec = vehicleModels.find(m => m.name.toLowerCase() === vehicle.model.toLowerCase() && m.color?.toLowerCase() === vehicle.color.toLowerCase());
       if (!modelSpec) {
         // Fallback or matches model name only
-        modelSpec = vehicleModels.find(m => m.name === vehicle.model && !m.color);
+        modelSpec = vehicleModels.find(m => m.name.toLowerCase() === vehicle.model.toLowerCase() && !m.color);
         if (!modelSpec) {
-           modelSpec = vehicleModels.find(m => m.name === vehicle.model);
+           modelSpec = vehicleModels.find(m => m.name.toLowerCase() === vehicle.model.toLowerCase());
         }
       }
       
@@ -285,8 +293,8 @@ export default function App() {
       for (const { part, usage } of inventoryUpdates) {
         const reduceAmt = Number(usage.toFixed(4));
         await updateDoc(doc(db, 'inventory', part.id), {
-          quantity: Math.max(0, part.quantity - reduceAmt),
-          usedQuantity: (part.usedQuantity || 0) + reduceAmt
+          quantity: increment(-reduceAmt),
+          usedQuantity: increment(reduceAmt)
         });
         await addDoc(collection(db, 'inventory_logs'), {
           partId: part.id,
@@ -324,8 +332,56 @@ export default function App() {
     }
   };
 
-  const handleDeleteVehicle = async (id: string) => {
+    const handleDeleteVehicle = async (id: string) => {
     try {
+      const vehicle = vehicles.find(v => v.id === id);
+      if (vehicle) {
+        // Find the corresponding model spec
+        let modelSpec = vehicleModels.find(m => m.name.toLowerCase() === vehicle.model.toLowerCase() && m.color?.toLowerCase() === vehicle.color.toLowerCase());
+        if (!modelSpec) {
+          modelSpec = vehicleModels.find(m => m.name.toLowerCase() === vehicle.model.toLowerCase() && !m.color);
+          if (!modelSpec) {
+             modelSpec = vehicleModels.find(m => m.name.toLowerCase() === vehicle.model.toLowerCase());
+          }
+        }
+        
+        const inventoryUpdates: { part: Part; usage: number }[] = [];
+
+        if (modelSpec && modelSpec.bom) {
+          modelSpec.bom.forEach(bomPart => {
+            const part = parts.find(p => p.id === bomPart.partId || p.name === bomPart.partName);
+            if (part) {
+              let usage = bomPart.quantity;
+              if (bomPart.unit === 'ML' && part.unit === 'Litres') usage = usage / 1000;
+              if (bomPart.unit === 'Grams' && part.unit === 'KGs') usage = usage / 1000;
+              if (bomPart.unit === 'Litres' && part.unit === 'ML') usage = usage * 1000;
+              if (bomPart.unit === 'KGs' && part.unit === 'Grams') usage = usage * 1000;
+              if (usage > 0) {
+                inventoryUpdates.push({ part, usage });
+              }
+            }
+          });
+        }
+        
+        // Restore inventory
+        for (const { part, usage } of inventoryUpdates) {
+          const addAmt = Number(usage.toFixed(4));
+          await updateDoc(doc(db, 'inventory', part.id), {
+            quantity: increment(addAmt),
+            usedQuantity: increment(-addAmt)
+          });
+          await addDoc(collection(db, 'inventory_logs'), {
+            partId: part.id,
+            partName: part.name,
+            partNumber: part.partNumber || '',
+            changeAmount: addAmt,
+            type: 'production_reverted',
+            reason: `Reverted deletion for vehicle ${vehicle.chassisNumber}`,
+            referenceId: vehicle.chassisNumber,
+            createdAt: Date.now()
+          });
+        }
+      }
       await deleteDoc(doc(db, 'vehicles', id));
     } catch (err: any) {
       alert('Error deleting: ' + err.message);
@@ -729,8 +785,8 @@ export default function App() {
         const invPart = parts.find((inv: Part) => inv.id === p.partId);
         if (invPart) {
           await updateDoc(doc(db, 'inventory', invPart.id), {
-            quantity: invPart.quantity + p.quantity,
-            usedQuantity: Math.max(0, (invPart.usedQuantity || 0) - p.quantity)
+            quantity: increment(p.quantity),
+            usedQuantity: increment(-p.quantity)
           });
         }
       }
@@ -812,7 +868,7 @@ export default function App() {
               </div>
             ) : (
               <div key={currentView} className="h-full">
-                {currentView.startsWith('admin') && <div className="p-4 sm:p-6 lg:p-8 mx-auto w-full max-w-full"><AdminDashboard currentUserRole={effectiveUserRole} activeTab={currentView.split('-')[1] || 'all'} onNavigate={(tab) => setCurrentView('admin-' + tab)} /></div>}
+                {currentView.startsWith('admin') && <div className="p-4 sm:p-6 lg:p-8 w-full"><AdminDashboard currentUserRole={effectiveUserRole} activeTab={currentView.split('-')[1] || 'all'} onNavigate={(tab) => setCurrentView('admin-' + tab)} /></div>}
                 
                 {currentView === 'dashboard' && (
                   <div className="flex flex-col">
@@ -919,7 +975,7 @@ export default function App() {
                 )}
                 
                 {currentView === 'production' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full">
                     <VehicleProduction 
 
                       vehicles={vehicles}
@@ -932,7 +988,7 @@ export default function App() {
                   </div>
                 )}
                 {currentView === 'specifications' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full">
                     <VehicleSpecifications 
                       vehicleModels={vehicleModels}
                       parts={parts}
@@ -944,7 +1000,7 @@ export default function App() {
                 )}
                 
                 {currentView === 'stock' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full">
                     <StockManagement 
                       vehicles={vehicles}
                       vehicleModels={vehicleModels}
@@ -960,7 +1016,7 @@ export default function App() {
                 )}
                 
                 {currentView === 'sales' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full">
                     <SalesManagement 
                       sales={sales}
                       vehicles={vehicles}
@@ -970,7 +1026,7 @@ export default function App() {
                 )}
 
                   {currentView === 'parts' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full">
                     <PartsInventory 
                       parts={parts}
                       inventoryLogs={inventoryLogs}
@@ -990,7 +1046,7 @@ export default function App() {
                   )}
 
                   {currentView === 'inventory_logs' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full">
                     <InventoryLogs
                       logs={inventoryLogs}
                       onDeleteLogs={handleDeleteLogs}
@@ -1000,7 +1056,7 @@ export default function App() {
                   )}
 
                   {currentView === 'invoices' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full">
                     <InvoiceSystem 
                       sales={sales}
                       vehicles={vehicles}
@@ -1012,7 +1068,7 @@ export default function App() {
                   )}
                   
                   {currentView === 'reports' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl space-y-6">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full space-y-6">
                     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                       <div className="mb-6">
                         <h3 className="text-lg font-bold text-[#006699] uppercase tracking-wide border-b border-gray-100 pb-2">Business Overview</h3>
@@ -1038,7 +1094,7 @@ export default function App() {
                   )}
                   
                   {!currentView.startsWith('admin') && currentView !== 'dashboard' && currentView !== 'production' && currentView !== 'specifications' && currentView !== 'stock' && currentView !== 'sales' && currentView !== 'parts' && currentView !== 'inventory_logs' && currentView !== 'invoices' && currentView !== 'reports' && (
-                  <div className="p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
+                  <div className="p-4 sm:p-6 lg:p-8 w-full">
                     <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-xl bg-white shadow-sm">
                       <p className="text-lg font-medium text-slate-500 capitalize">
                         {currentView.replace('-', ' ')} View

@@ -530,9 +530,9 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {notification && (
-        <div className={`fixed bottom-4 right-4 p-4 rounded-lg shadow-lg text-white flex justify-between items-center z-50 min-w-[300px] ${notification.type === 'error' ? 'bg-rose-500' : notification.type === 'success' ? 'bg-emerald-500' : 'bg-blue-500'}`}>
+        <div className={`fixed bottom-4 right-4 p-4 rounded-sm shadow-sm text-white flex justify-between items-center z-50 min-w-[300px] ${notification.type === 'error' ? 'bg-rose-500' : notification.type === 'success' ? 'bg-emerald-500' : 'bg-blue-500'}`}>
           <span>{notification.message}</span>
           <button onClick={() => setNotification(null)} className="ml-4 text-white hover:text-slate-200">
             <X className="w-4 h-4" />
@@ -579,10 +579,10 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
 
       {/* Enterprise Dashboard Layout */}
       {!isCreating && !selectedSale && (
-        <div className="space-y-6">
+        <div className="space-y-6 font-sans">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0 no-print">
             <div>
-              <h2 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+              <h2 className="text-lg font-bold text-[#006699] uppercase tracking-wide">
                 Invoice Management
               </h2>
               <p className="text-sm text-slate-500 mt-1">Manage and track your customer invoices effectively.</p>
@@ -590,7 +590,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
           </div>
           
           {/* 2-Layer Enterprise Header */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden mb-6 no-print">
+          <div className="bg-white rounded-sm border border-slate-300/80 shadow-sm overflow-hidden mb-6 no-print">
 
             {/* Combined Toolbar */}
             <div className="px-5 py-4 border-b border-slate-100 bg-white flex flex-col gap-4">
@@ -602,14 +602,14 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                      </div>
                      <input
                         type="text"
-                        className="block w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 placeholder:font-normal h-10"
+                        className="block w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-300 rounded-sm text-sm font-medium text-slate-800 focus:bg-white focus:outline-none focus:border-blue-400 focus:border-blue-500 transition-all placeholder:text-slate-400 placeholder:font-normal h-10"
                         placeholder="Search invoices..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                      />
                      <div className="absolute inset-y-0 right-0 pr-2 flex items-center gap-1">
                         {searchTerm && (
-                           <button onClick={() => setSearchTerm('')} className="p-1 text-slate-400 hover:text-slate-600 rounded-md transition-colors">
+                           <button onClick={() => setSearchTerm('')} className="p-1 text-slate-400 hover:text-slate-600 rounded-sm transition-colors">
                               <X className="w-3.5 h-3.5" />
                            </button>
                         )}
@@ -622,29 +622,29 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                   <div className="flex flex-wrap items-center gap-3">
                      {/* Separate Date Pickers */}
                      <div className="flex items-center gap-2">
-                        <div className="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 overflow-hidden h-10 transition-all">
-                           <div className="flex items-center pl-3 pr-2 h-full bg-slate-50 border-r border-slate-200 text-slate-500">
+                        <div className="flex items-center bg-white border border-slate-300 rounded-sm shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 overflow-hidden h-10 transition-all">
+                           <div className="flex items-center pl-3 pr-2 h-full bg-slate-50 border-r border-slate-300 text-slate-500">
                               <Calendar className="w-4 h-4" />
                            </div>
                            <input
                               type="date"
                               value={startDate}
                               onChange={(e) => setStartDate(e.target.value)}
-                              className="border-none bg-transparent text-sm font-medium text-slate-700 outline-none focus:ring-0 px-3 py-2 w-[125px] cursor-pointer"
+                              className="border-none bg-transparent text-sm font-medium text-slate-700 outline-none focus:ring-0 px-2 py-1 text-[13px] w-[125px] cursor-pointer"
                            />
                         </div>
                         
                         <span className="text-slate-300 font-medium px-0.5">→</span>
                         
-                        <div className="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 overflow-hidden h-10 transition-all">
-                           <div className="flex items-center pl-3 pr-2 h-full bg-slate-50 border-r border-slate-200 text-slate-500">
+                        <div className="flex items-center bg-white border border-slate-300 rounded-sm shadow-sm focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 overflow-hidden h-10 transition-all">
+                           <div className="flex items-center pl-3 pr-2 h-full bg-slate-50 border-r border-slate-300 text-slate-500">
                               <Calendar className="w-4 h-4" />
                            </div>
                            <input
                               type="date"
                               value={endDate}
                               onChange={(e) => setEndDate(e.target.value)}
-                              className="border-none bg-transparent text-sm font-medium text-slate-700 outline-none focus:ring-0 px-3 py-2 w-[125px] cursor-pointer"
+                              className="border-none bg-transparent text-sm font-medium text-slate-700 outline-none focus:ring-0 px-2 py-1 text-[13px] w-[125px] cursor-pointer"
                            />
                         </div>
                         
@@ -653,7 +653,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                               setAppliedStartDate(startDate);
                               setAppliedEndDate(endDate);
                            }}
-                           className="flex items-center justify-center h-10 w-10 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors ml-0.5 border border-blue-100"
+                           className="flex items-center justify-center h-10 w-10 bg-blue-50 text-blue-600 rounded-sm hover:bg-blue-100 hover:text-blue-700 transition-colors ml-0.5 border border-blue-100"
                            title="Search by Date"
                         >
                            <Search className="w-4 h-4" />
@@ -666,7 +666,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                               setAppliedEndDate(''); 
                            }}
                            disabled={!(startDate || endDate || appliedStartDate || appliedEndDate)}
-                           className={`px-3 py-2 rounded-lg transition-colors flex items-center justify-center h-10 text-sm font-medium border border-transparent ml-0.5 min-w-[70px] ${
+                           className={`px-2 py-1 text-[13px] rounded-sm transition-colors flex items-center justify-center h-10 text-sm font-medium border border-transparent ml-0.5 min-w-[70px] ${
                               (startDate || endDate || appliedStartDate || appliedEndDate)
                                  ? 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
                                  : 'text-slate-300 opacity-50 cursor-not-allowed'
@@ -684,7 +684,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         <select
                            value={statusFilter}
                            onChange={(e) => setStatusFilter(e.target.value)}
-                           className="appearance-none block w-[130px] pl-4 pr-10 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all h-10 shadow-sm cursor-pointer"
+                           className="appearance-none block w-[130px] pl-4 pr-10 py-2 bg-white border border-slate-300 rounded-sm text-sm font-semibold text-slate-700 focus:bg-white focus:outline-none focus:border-blue-400/20 focus:border-blue-500 transition-all h-10 shadow-sm cursor-pointer"
                         >
                            <option value="all">All Status</option>
                            <option value="paid">Paid</option>
@@ -728,7 +728,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         } catch (err) {
                            setNotification({ message: 'Failed to export list.', type: 'error' });
                         }
-                     }} className="flex items-center justify-center min-w-[110px] px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-sm font-semibold h-10">
+                     }} className="flex items-center justify-center min-w-[110px] px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-sm hover:bg-slate-50 transition-colors shadow-sm text-sm font-semibold h-10">
                         <Download className="w-4 h-4 mr-2 text-slate-500" />
                         Export
                         <ChevronDown className="w-3.5 h-3.5 ml-2 text-slate-400" />
@@ -739,10 +739,10 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                      <button
                         onClick={() => setShowMultiDeleteConfirm(true)}
                         disabled={selectedInvoices.length === 0}
-                        className={`flex items-center justify-center min-w-[100px] px-4 py-2 border rounded-xl transition-colors shadow-sm text-sm font-bold h-10 ${
+                        className={`flex items-center justify-center min-w-[100px] px-4 py-2 border rounded-sm transition-colors shadow-sm text-sm font-bold h-10 ${
                            selectedInvoices.length > 0 
                               ? 'bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100' 
-                              : 'bg-slate-50 border-slate-200 text-slate-400 opacity-70 cursor-not-allowed'
+                              : 'bg-slate-50 border-slate-300 text-slate-400 opacity-70 cursor-not-allowed'
                         }`}
                      >
                         <Trash2 className="w-4 h-4 mr-1.5" />
@@ -756,7 +756,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                            setIsCreating(true);
                            setSelectedSaleId(null);
                         }}
-                        className="flex items-center justify-center min-w-[180px] px-5 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg text-sm font-bold border border-blue-700/50 h-10"
+                        className="flex items-center justify-center min-w-[180px] px-5 py-2 bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] text-white rounded-sm  transition-all shadow-md hover:shadow-sm text-sm font-bold border border-blue-700/50 h-10"
                      >
                         <Plus className="w-4 h-4 mr-1.5" />
                         Create New Invoice
@@ -768,13 +768,13 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
           </div>
 
           {/* Advanced Data Table */}
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="border border-slate-300 mb-8">
 
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-100 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                  <tr className="bg-slate-100 border-b border-slate-300 text-xs uppercase tracking-wider text-slate-500 font-bold">
                     <th className="px-3 py-4 w-10">
                       <input 
                         type="checkbox" 
@@ -787,11 +787,11 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                       />
                     </th>
                     <th className="px-3 py-4 w-10">S.No.</th>
-                    <th className="px-6 py-4">Invoice No</th>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4">Customer</th>
-                    <th className="px-6 py-4">Model & Chassis</th>
-                    <th className="px-6 py-4">Status</th>
+                    <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Invoice No</th>
+                    <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Date</th>
+                    <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Customer</th>
+                    <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Model & Chassis</th>
+                    <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Status</th>
                     <th className="px-6 py-4 text-right">Amount</th>
                     <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
@@ -824,7 +824,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         <td className="px-3 py-4 text-sm text-slate-600 font-medium">
                           {index + 1}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-2 py-1 border-r border-slate-300 last:border-r-0">
                           <button 
                             onClick={() => setSelectedSaleId(sale.id)}
                             className="font-bold text-blue-600 hover:text-blue-700 hover:underline"
@@ -843,7 +843,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                           <div className="text-sm font-medium text-slate-800">{sale.vehicleModel || 'Pick Electric Z'}</div>
                           <div className="text-xs font-mono text-slate-500">{sale.chassisNumber}</div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-2 py-1 border-r border-slate-300 last:border-r-0">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                             Paid
                           </span>
@@ -876,7 +876,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                   )}
                 </tbody>
               </table>
-              <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-sm text-slate-600">
+              <div className="p-4 border-t border-slate-300 bg-slate-50 flex items-center justify-between text-sm text-slate-600">
                  <div>Showing <span className="font-bold">{filteredSales.length}</span> entries</div>
                  <div className="flex space-x-1">
                     <button className="px-3 py-1 border border-slate-300 rounded bg-white disabled:opacity-50" disabled>Prev</button>
@@ -895,10 +895,10 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
           {/* Main Work Area */}
           <div className="flex-1 w-full max-w-full overflow-hidden">
              {isCreating ? (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden no-print">
-              <div className="p-5 border-b border-slate-200 bg-gradient-to-r from-blue-900 to-blue-800 text-white flex justify-between items-center">
+            <div className="bg-white rounded-sm border border-slate-300 shadow-sm overflow-hidden no-print">
+              <div className="p-5 border-b border-slate-300 bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] text-white flex justify-between items-center">
                 <div className="flex items-center space-x-3">
-                  <div className="bg-white/20 p-2 rounded-lg">
+                  <div className="bg-white/20 p-2 rounded-sm">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -911,7 +911,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                 </button>
               </div>
               <form onSubmit={handleSubmit} className="p-0">
-                <div className="flex border-b border-slate-200 bg-slate-50/80 overflow-x-auto hidden sm:flex">
+                <div className="flex border-b border-slate-300 bg-[#ececec] overflow-x-auto hidden sm:flex">
                    <div className="flex-1 py-4 px-6 text-center border-b-2 border-blue-600 font-bold flex flex-col items-center text-blue-700">
                      <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs mb-1">1</span>
                      Customer
@@ -942,7 +942,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         required
                         value={formData.customerName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 focus:bg-white transition"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-slate-50/50 focus:bg-white transition"
                         placeholder="Full Legal Name"
                       />
                     </div>
@@ -954,7 +954,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="relationName"
                         value={formData.relationName}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 focus:bg-white transition"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-slate-50/50 focus:bg-white transition"
                         placeholder="Father/Husband Name"
                       />
                     </div>
@@ -967,7 +967,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         required
                         value={formData.phoneNumber}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 focus:bg-white transition"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-slate-50/50 focus:bg-white transition"
                         placeholder="+91"
                       />
                     </div>
@@ -979,7 +979,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="postOffice"
                         value={formData.postOffice}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 focus:bg-white transition"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-slate-50/50 focus:bg-white transition"
                         placeholder="PO"
                       />
                     </div>
@@ -991,7 +991,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="policeStation"
                         value={formData.policeStation}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 focus:bg-white transition"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-slate-50/50 focus:bg-white transition"
                         placeholder="PS"
                       />
                     </div>
@@ -1003,7 +1003,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="districtPin"
                         value={formData.districtPin}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 focus:bg-white transition"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-slate-50/50 focus:bg-white transition"
                         placeholder="District - PIN Code"
                       />
                     </div>
@@ -1016,7 +1016,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         rows={2}
                         value={formData.address}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 focus:bg-white transition"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-slate-50/50 focus:bg-white transition"
                         placeholder="Complete postal address"
                       />
                     </div>
@@ -1034,7 +1034,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         required
                         value={formData.chassisNumber}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                       >
                         <option value="">-- Select Available Vehicle --</option>
                         {availableVehiclesForSelect.map(v => (
@@ -1044,7 +1044,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         ))}
                       </select>
                       {availableVehiclesForSelect.length === 0 && (
-                        <p className="text-xs text-rose-500 mt-1 font-medium">No vehicles in stock!</p>
+                        <p className="text-xs text-[#cc0000] mt-1 font-medium">No vehicles in stock!</p>
                       )}
                     </div>
 
@@ -1055,7 +1055,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="vehicleModel"
                         readOnly
                         value={formData.vehicleModel || 'Pick Electric'}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg bg-slate-100 text-slate-500 cursor-not-allowed font-medium"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm bg-slate-100 text-slate-500 cursor-not-allowed font-medium"
                       />
                     </div>
 
@@ -1066,7 +1066,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="wrcBookNo"
                         value={formData.wrcBookNo}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                         placeholder="WRC/Book No"
                       />
                     </div>
@@ -1078,7 +1078,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="keyNumber"
                         value={formData.keyNumber}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                         placeholder="Key #"
                       />
                     </div>
@@ -1090,7 +1090,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="hypothecation"
                         value={formData.hypothecation}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                         placeholder="Financier/Bank Name"
                       />
                     </div>
@@ -1108,7 +1108,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="salesPerson"
                         value={formData.salesPerson}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                         placeholder="Sales Person Name"
                       />
                     </div>
@@ -1120,7 +1120,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         name="deliveryFrom"
                         value={formData.deliveryFrom}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                         placeholder="Location"
                       />
                     </div>
@@ -1134,7 +1134,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         min="0"
                         value={formData.sellingPrice}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm font-semibold"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white font-semibold"
                         placeholder="Base Price"
                       />
                     </div>
@@ -1147,7 +1147,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         required
                         value={formData.saleDate}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                       />
                     </div>
 
@@ -1157,7 +1157,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         type="text"
                         readOnly
                         value={formatCurrency(formData.gstAmount)}
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg bg-slate-100 text-slate-600 font-medium cursor-not-allowed"
+                        className="w-full px-4 py-2.5 border border-slate-300 rounded-sm bg-slate-100 text-slate-600 font-medium cursor-not-allowed"
                       />
                     </div>
 
@@ -1167,23 +1167,23 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                         type="text"
                         readOnly
                         value={formatCurrency(formData.totalAmount)}
-                        className="w-full px-4 py-2.5 border-2 border-blue-200 rounded-lg bg-blue-50 text-blue-700 font-bold cursor-not-allowed text-lg"
+                        className="w-full px-4 py-2.5 border-2 border-blue-200 rounded-sm bg-blue-50 text-blue-700 font-bold cursor-not-allowed text-lg"
                       />
                     </div>
                   </div>
                   
-                  <div className="mt-8 flex justify-end space-x-3 pt-6 border-t border-slate-200">
+                  <div className="mt-8 flex justify-end space-x-3 pt-6 border-t border-slate-300">
                     <button
                       type="button"
                       onClick={handleCancelIntent}
-                      className="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-semibold text-sm"
+                      className="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-sm hover:bg-slate-50 transition-colors font-semibold text-sm"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={availableVehiclesForSelect.length === 0}
-                      className="flex items-center px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm"
+                      className="flex items-center px-6 py-2.5 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-all shadow-md hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm"
                     >
                       {isEditing ? 'Save Changes' : (
                         <div className="flex items-center">
@@ -1203,7 +1203,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setSelectedSaleId(null)}
-                    className="flex items-center justify-center min-w-[100px] px-4 py-2 bg-white text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium border border-slate-200 h-10"
+                    className="flex items-center justify-center min-w-[100px] px-4 py-2 bg-white text-slate-700 rounded-sm hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium border border-slate-300 h-10"
                   >
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back
@@ -1211,7 +1211,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                   {onUpdateSale && (
                     <button
                       onClick={handleEditStart}
-                      className="flex items-center justify-center min-w-[100px] px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors shadow-sm text-sm font-medium border border-slate-200 h-10"
+                      className="flex items-center justify-center min-w-[100px] px-4 py-2 bg-slate-100 text-slate-700 rounded-sm hover:bg-slate-200 transition-colors shadow-sm text-sm font-medium border border-slate-300 h-10"
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit
@@ -1220,7 +1220,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                   {onDeleteSale && (
                     <button
                       onClick={handleDelete}
-                      className="flex items-center justify-center min-w-[100px] px-4 py-2 bg-rose-50 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors shadow-sm text-sm font-medium border border-rose-200 h-10"
+                      className="flex items-center justify-center min-w-[100px] px-4 py-2 bg-rose-50 text-rose-700 rounded-sm hover:bg-rose-100 transition-colors shadow-sm text-sm font-medium border border-rose-200 h-10"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
@@ -1230,21 +1230,21 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={handleDownloadExcel}
-                    className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm text-sm font-medium"
+                    className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-sm hover:bg-emerald-700 transition-colors shadow-sm text-sm font-medium"
                   >
                     <FileSpreadsheet className="w-4 h-4 mr-2" />
                     Excel Format
                   </button>
                   <button
                     onClick={handlePrint}
-                    className="flex items-center px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900 transition-colors shadow-sm text-sm font-medium"
+                    className="flex items-center px-4 py-2 bg-slate-800 text-white rounded-sm hover:bg-slate-900 transition-colors shadow-sm text-sm font-medium"
                   >
                     <Printer className="w-4 h-4 mr-2" />
                     Print Invoice
                   </button>
                   <button
                     onClick={handleDownloadPDF}
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium"
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium"
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Save as PDF
@@ -1253,8 +1253,8 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
               </div>
 
               {/* Printable Invoice Container */}
-              <div id="printable-invoice-content" className="printable-invoice bg-white max-w-[950px] mx-auto text-sm leading-snug text-slate-800 font-sans shadow-lg rounded-sm sm:p-12 p-6 print:shadow-none print:p-0 print:w-full print:max-w-none print:rounded-none">
-                 <div className="flex flex-col relative border border-slate-200">
+              <div id="printable-invoice-content" className="printable-invoice bg-white max-w-[950px] mx-auto text-sm leading-snug text-slate-800 font-sans shadow-sm rounded-sm sm:p-12 p-6 print:shadow-none print:p-0 print:w-full print:max-w-none print:rounded-none">
+                 <div className="flex flex-col relative border border-slate-300">
                     
                     {/* Header Section */}
                     <div className="flex justify-between items-start bg-blue-900 text-white p-10 pb-8 rounded-t-lg">
@@ -1278,7 +1278,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
 
                     {/* Metadata Grid */}
                     <div className="flex">
-                       <div className="w-1/2 p-8 border-r border-b border-slate-200 bg-white">
+                       <div className="w-1/2 p-8 border-r border-b border-slate-300 bg-white">
                           <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2">CUSTOMER DETAILS</h3>
                           <div className="space-y-3">
                              <div className="flex"><span className="w-32 text-slate-500 font-medium text-xs uppercase">Customer Name:</span><span className="font-bold text-slate-900 uppercase flex-1">{selectedSale.customerName}</span></div>
@@ -1288,8 +1288,8 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                              <div className="flex"><span className="w-32 text-slate-500 font-medium text-xs uppercase">State:</span><span className="font-medium text-slate-800 uppercase flex-1">Bihar (Code: 10)</span></div>
                           </div>
                        </div>
-                       <div className="w-1/2 p-8 border-b border-slate-200 bg-slate-50">
-                          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-200 pb-2">INVOICE INFORMATION</h3>
+                       <div className="w-1/2 p-8 border-b border-slate-300 bg-slate-50">
+                          <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 border-b border-slate-300 pb-2">INVOICE INFORMATION</h3>
                           <div className="space-y-3 relative">
                              <div className="flex"><span className="w-32 text-slate-500 font-medium text-xs uppercase">Invoice No:</span><span className="font-bold text-slate-900 flex-1">{selectedSale.invoiceId}</span></div>
                              <div className="flex"><span className="w-32 text-slate-500 font-medium text-xs uppercase">Invoice Date:</span><span className="font-medium text-slate-800 flex-1">{new Date(selectedSale.saleDate).toLocaleDateString('en-GB').replace(/\//g, '.')}</span></div>
@@ -1301,7 +1301,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                        </div>
                     </div>
 
-                    <div className="bg-[#f8fafc] px-8 py-4 border-b border-slate-200 flex items-center">
+                    <div className="bg-[#f8fafc] px-8 py-4 border-b border-slate-300 flex items-center">
                        <span className="text-slate-500 font-bold mr-4 uppercase text-[10px] tracking-widest">HYPOTHECATION WITH:</span>
                        <span className="font-bold text-slate-900 text-sm uppercase">{selectedSale.hypothecation || 'N/A'}</span>
                     </div>
@@ -1320,56 +1320,56 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                        </thead>
                        <tbody className="divide-y divide-slate-200">
                           <tr>
-                             <td className="py-5 px-4 text-center font-bold text-slate-700 align-top border border-slate-200">1</td>
-                             <td className="py-5 px-4 align-top border border-slate-200">
+                             <td className="py-5 px-4 text-center font-bold text-slate-700 align-top border border-slate-300">1</td>
+                             <td className="py-5 px-4 align-top border border-slate-300">
                                 <div className="font-bold text-slate-900 text-[13px] uppercase mb-1">{selectedSale.vehicleModel || 'Pick Electric Z'}</div>
                                 <p className="text-[10px] text-slate-500 mb-4 max-w-[340px] uppercase font-medium leading-relaxed">
                                    NEW PICK ELECTRIC AUTO THREE WHEELER (T) BATTERY OPERATED VEHICLE WITH TOOLS AND MANNUALS AS SUPPLIED BY THE MANUFACTURERS.
                                 </p>
                                 
-                                <div className="border border-slate-200 rounded grid grid-cols-2 text-[10px] uppercase font-medium divide-y divide-slate-200">
+                                <div className="border border-slate-300 rounded grid grid-cols-2 text-[10px] uppercase font-medium divide-y divide-slate-200">
                                    <div className="flex justify-between px-3 py-1.5"><span className="text-slate-500">Chassis No:</span><span className="font-bold text-slate-900">{selectedSale.chassisNumber}</span></div>
-                                   <div className="flex justify-between px-3 py-1.5 border-l border-slate-200"><span className="text-slate-500">Motor No:</span><span className="font-bold text-slate-900">{vehicleDetails?.motorNumber || 'N/A'}</span></div>
+                                   <div className="flex justify-between px-3 py-1.5 border-l border-slate-300"><span className="text-slate-500">Motor No:</span><span className="font-bold text-slate-900">{vehicleDetails?.motorNumber || 'N/A'}</span></div>
                                    <div className="flex justify-between px-3 py-1.5"><span className="text-slate-500">Batteries:</span><span className="font-bold text-slate-900">{vehicleDetails?.batteryNumbers?.join(', ') || 'N/A'}</span></div>
-                                   <div className="flex justify-between px-3 py-1.5 border-l border-slate-200"><span className="text-slate-500">Color:</span><span className="font-bold text-slate-900">{vehicleDetails?.color || 'RED'}</span></div>
+                                   <div className="flex justify-between px-3 py-1.5 border-l border-slate-300"><span className="text-slate-500">Color:</span><span className="font-bold text-slate-900">{vehicleDetails?.color || 'RED'}</span></div>
                                    <div className="flex justify-between px-3 py-1.5 col-span-2"><span className="text-slate-500">Key No:</span><span className="font-bold text-slate-900">{selectedSale.keyNumber || 'N/A'}</span></div>
                                 </div>
                              </td>
-                             <td className="py-5 px-4 text-center text-slate-700 font-bold align-top border border-slate-200">8703.80.40</td>
-                             <td className="py-5 px-4 text-center font-bold text-slate-900 align-top border border-slate-200">1</td>
-                             <td className="py-5 px-4 text-right font-bold text-slate-700 align-top border border-slate-200">{selectedSale.sellingPrice.toFixed(2)}</td>
-                             <td className="py-5 px-4 text-right font-bold text-slate-900 align-top border border-slate-200">{Math.round(selectedSale.sellingPrice).toFixed(2)}</td>
+                             <td className="py-5 px-4 text-center text-slate-700 font-bold align-top border border-slate-300">8703.80.40</td>
+                             <td className="py-5 px-4 text-center font-bold text-slate-900 align-top border border-slate-300">1</td>
+                             <td className="py-5 px-4 text-right font-bold text-slate-700 align-top border border-slate-300">{selectedSale.sellingPrice.toFixed(2)}</td>
+                             <td className="py-5 px-4 text-right font-bold text-slate-900 align-top border border-slate-300">{Math.round(selectedSale.sellingPrice).toFixed(2)}</td>
                           </tr>
                           
                           {/* Tax Included Rows shown inline instead of table to save space */}
                           <tr className="bg-[#f8fafc]">
-                             <td colSpan={4} className="border border-slate-200"></td>
-                             <td className="py-2 px-4 text-right text-slate-600 font-bold text-[11px] uppercase border border-slate-200">SGST (2.5%)</td>
-                             <td className="py-2 px-4 text-right font-bold text-slate-800 border border-slate-200">{(selectedSale.gstAmount / 2).toFixed(2)}</td>
+                             <td colSpan={4} className="border border-slate-300"></td>
+                             <td className="py-2 px-4 text-right text-slate-600 font-bold text-[11px] uppercase border border-slate-300">SGST (2.5%)</td>
+                             <td className="py-2 px-4 text-right font-bold text-slate-800 border border-slate-300">{(selectedSale.gstAmount / 2).toFixed(2)}</td>
                           </tr>
                           <tr className="bg-[#f8fafc]">
-                             <td colSpan={4} className="border border-slate-200"></td>
-                             <td className="py-2 px-4 text-right text-slate-600 font-bold text-[11px] uppercase border border-slate-200">CGST (2.5%)</td>
-                             <td className="py-2 px-4 text-right font-bold text-slate-800 border border-slate-200">{(selectedSale.gstAmount / 2).toFixed(2)}</td>
+                             <td colSpan={4} className="border border-slate-300"></td>
+                             <td className="py-2 px-4 text-right text-slate-600 font-bold text-[11px] uppercase border border-slate-300">CGST (2.5%)</td>
+                             <td className="py-2 px-4 text-right font-bold text-slate-800 border border-slate-300">{(selectedSale.gstAmount / 2).toFixed(2)}</td>
                           </tr>
                        </tbody>
                        <tfoot>
                           <tr className="bg-slate-50">
-                             <td colSpan={4} className="py-4 px-4 border border-slate-200 bg-white">
+                             <td colSpan={4} className="py-4 px-4 border border-slate-300 bg-white">
                                 <div className="flex flex-col">
                                    <span className="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-bold">AMOUNT IN WORDS</span>
                                    <span className="font-bold text-slate-800 text-xs">{numberToWords(Math.round(selectedSale.totalAmount)).toUpperCase()} RUPEES ONLY.</span>
                                 </div>
                              </td>
-                             <td className="py-4 px-4 text-right font-black text-[#1e3a8a] uppercase text-sm border-b border-t border-slate-200">GRAND TOTAL</td>
-                             <td className="py-4 px-4 text-right font-black text-slate-900 text-lg border border-slate-200 bg-[#f8fafc]">₹{Math.round(selectedSale.totalAmount).toFixed(2)}</td>
+                             <td className="py-4 px-4 text-right font-black text-[#1e3a8a] uppercase text-sm border-b border-t border-slate-300">GRAND TOTAL</td>
+                             <td className="py-4 px-4 text-right font-black text-slate-900 text-lg border border-slate-300 bg-[#f8fafc]">₹{Math.round(selectedSale.totalAmount).toFixed(2)}</td>
                           </tr>
                        </tfoot>
                     </table>
 
                     {/* Tax Breakdown Matrix */}
                     <div className="bg-white">
-                       <table className="w-full text-xs text-center border-t border-slate-200">
+                       <table className="w-full text-xs text-center border-t border-slate-300">
                           <thead className="bg-[#1e293b] text-white">
                              <tr>
                                 <th className="py-2 px-2 font-bold uppercase tracking-wider border border-[#1e293b]">HSN/SAC</th>
@@ -1390,13 +1390,13 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                           </thead>
                           <tbody className="divide-y divide-slate-200 text-slate-800">
                              <tr>
-                                <td className="py-3 px-2 font-bold border border-slate-200">8703.80.40</td>
-                                <td className="py-3 px-2 border border-slate-200 font-bold text-slate-700">{Math.round(selectedSale.sellingPrice).toFixed(2)}</td>
-                                <td className="py-3 px-2 border border-slate-200 text-slate-500 font-bold">2.5%</td>
-                                <td className="py-3 px-2 border border-slate-200 font-bold text-slate-700">{(selectedSale.gstAmount / 2).toFixed(2)}</td>
-                                <td className="py-3 px-2 border border-slate-200 text-slate-500 font-bold">2.5%</td>
-                                <td className="py-3 px-2 border border-slate-200 font-bold text-slate-700">{(selectedSale.gstAmount / 2).toFixed(2)}</td>
-                                <td className="py-3 px-2 border border-slate-200 font-bold text-slate-900 bg-[#f8fafc]">{Math.round(selectedSale.gstAmount).toFixed(2)}</td>
+                                <td className="py-3 px-2 font-bold border border-slate-300">8703.80.40</td>
+                                <td className="py-3 px-2 border border-slate-300 font-bold text-slate-700">{Math.round(selectedSale.sellingPrice).toFixed(2)}</td>
+                                <td className="py-3 px-2 border border-slate-300 text-slate-500 font-bold">2.5%</td>
+                                <td className="py-3 px-2 border border-slate-300 font-bold text-slate-700">{(selectedSale.gstAmount / 2).toFixed(2)}</td>
+                                <td className="py-3 px-2 border border-slate-300 text-slate-500 font-bold">2.5%</td>
+                                <td className="py-3 px-2 border border-slate-300 font-bold text-slate-700">{(selectedSale.gstAmount / 2).toFixed(2)}</td>
+                                <td className="py-3 px-2 border border-slate-300 font-bold text-slate-900 bg-[#f8fafc]">{Math.round(selectedSale.gstAmount).toFixed(2)}</td>
                              </tr>
                           </tbody>
                        </table>
@@ -1404,7 +1404,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
 
                     {/* Footer / Terms */}
                     <div className="grid grid-cols-2 bg-white flex-1 min-h-[180px]">
-                       <div className="p-8 border-r border-slate-200 text-[10px]">
+                       <div className="p-8 border-r border-slate-300 text-[10px]">
                           <p className="font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">TERMS & CONDITIONS</p>
                           <ul className="list-disc pl-4 space-y-2 text-slate-600 font-medium border-l-2 border-transparent">
                              <li>Interest @ 24% p.a. will be charged if bill is not paid within 7 days.</li>
@@ -1419,7 +1419,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
                              <p className="font-black text-slate-800 text-sm">For PICK ELECTRIC AUTO PRIVATE LIMITED</p>
                              <p className="text-slate-400 text-[10px] mt-1 uppercase font-bold tracking-widest">(AUTHORIZED SIGNATORY)</p>
                           </div>
-                          <div className="mt-16 flex justify-between items-end border-t border-slate-200 pt-4">
+                          <div className="mt-16 flex justify-between items-end border-t border-slate-300 pt-4">
                              <div className="text-center w-40">
                                 <p className="font-bold text-slate-400 uppercase tracking-widest text-[10px] mt-1">CUSTOMER SIGNATURE</p>
                              </div>
@@ -1433,7 +1433,7 @@ export function InvoiceSystem({ sales, vehicles, onAddSale, onUpdateSale, onDele
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm h-[600px] flex flex-col items-center justify-center p-8 text-center no-print">
+            <div className="bg-white rounded-sm border border-slate-300 shadow-sm h-[600px] flex flex-col items-center justify-center p-8 text-center no-print">
               <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-400">
                 <FileText className="w-8 h-8" />
               </div>

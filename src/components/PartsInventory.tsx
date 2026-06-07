@@ -1029,10 +1029,10 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
   }, [parts]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+          <h2 className="text-lg font-bold text-[#006699] uppercase tracking-wide">
             Parts Inventory
             {lastStockUpdate && (
               <span className="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-1 rounded-full whitespace-nowrap">
@@ -1046,7 +1046,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
           {lastImportTime && onUndoLastImport && (
             <button
               onClick={() => setShowUndoConfirm(true)}
-              className="flex items-center px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg hover:bg-rose-100 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
+              className="flex items-center px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-sm hover:bg-rose-100 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
             >
               Undo Last Import
             </button>
@@ -1060,7 +1060,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
           />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
+            className="flex items-center px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-sm hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
             disabled={isImporting || !onBulkAddParts}
           >
             {isImporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin text-blue-600" /> : <Upload className="w-4 h-4 mr-2 text-slate-500" />}
@@ -1069,7 +1069,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
           <div className="relative">
             <button
               onClick={() => setShowExportMenu(!showExportMenu)}
-              className="flex items-center px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
+              className="flex items-center px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-sm hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium whitespace-nowrap"
               disabled={isExporting}
             >
               {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin text-blue-600" /> : <Download className="w-4 h-4 mr-2 text-slate-500" />}
@@ -1083,8 +1083,8 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                   className="fixed inset-0 z-10"
                   onClick={() => setShowExportMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-20 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
-                  <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100">
+                <div className="border border-slate-300 mb-8">
+                  <div className="px-2 py-1 text-[13px] text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100">
                     Export Format
                   </div>
                   <button
@@ -1117,7 +1117,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
               {onViewLogs && (
                 <button
                   onClick={onViewLogs}
-                  className="flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-md hover:bg-indigo-100 transition-colors shadow-sm text-sm font-medium whitespace-nowrap border border-indigo-100 mr-2"
+                  className="flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-sm hover:bg-indigo-100 transition-colors shadow-sm text-sm font-medium whitespace-nowrap border border-indigo-100 mr-2"
                 >
                   <ClipboardList className="w-4 h-4 mr-2" />
                   Stock Logs
@@ -1125,7 +1125,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
               )}
               <button
                 onClick={() => setIsFormOpen(true)}
-                className="flex items-center px-4 py-2 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition-colors shadow-sm text-sm font-medium whitespace-nowrap border border-slate-700"
+                className="flex items-center px-4 py-2 bg-slate-800 text-white rounded-sm hover:bg-slate-700 transition-colors shadow-sm text-sm font-medium whitespace-nowrap border border-slate-700"
               >
                 <PackagePlus className="w-4 h-4 mr-2" />
                 New Part
@@ -1136,7 +1136,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-[#f0f0f0] p-3 border border-slate-300 mb-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-slate-500">Total Parts Types</h3>
             <Wrench className="w-4 h-4 text-slate-400" />
@@ -1144,7 +1144,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
           <p className="text-2xl font-bold text-slate-800">{parts.length}</p>
         </div>
         
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-[#f0f0f0] p-3 border border-slate-300 mb-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-slate-500">Total Inventory Value</h3>
             <span className="text-lg">₹</span>
@@ -1152,7 +1152,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
           <p className="text-2xl font-bold text-slate-800">{formatCurrency(totalInventoryValue)}</p>
         </div>
         
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-[#f0f0f0] p-3 border border-slate-300 mb-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-slate-500">Total Used Parts</h3>
             <span className="text-lg text-slate-400">⚙️</span>
@@ -1160,7 +1160,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
           <p className="text-2xl font-bold text-slate-800">{totalUsedParts}</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="bg-[#f0f0f0] p-3 border border-slate-300 mb-4">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-medium text-slate-500">Low Stock Alerts</h3>
             <AlertTriangle className={`w-4 h-4 ${lowStockCount > 0 ? 'text-amber-500' : 'text-slate-400'}`} />
@@ -1172,8 +1172,8 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
       </div>
 
       {isFormOpen && !editingId && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all">
-          <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+        <div className="border border-slate-300 mb-8">
+          <div className="p-4 border-b border-slate-300 bg-slate-50 flex justify-between items-center">
             <h3 className="font-semibold text-slate-800">Receive New Parts</h3>
             <button onClick={handleCancelIntent} className="text-slate-400 hover:text-slate-600">
               <X className="w-5 h-5" />
@@ -1183,19 +1183,19 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Part Number</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Part Number</label>
                 <input
                   type="text"
                   name="partNumber"
                   value={formData.partNumber || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                   placeholder="e.g. PN-101"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Part Name / Product Name</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Part Name / Product Name</label>
                 <input
                   type="text"
                   name="name"
@@ -1203,7 +1203,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                   list="partNamesList"
                   value={formData.name || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                   placeholder="Select or enter part name"
                 />
                 <datalist id="partNamesList">
@@ -1214,19 +1214,19 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Supplier</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Supplier</label>
                 <input
                   type="text"
                   name="supplier"
                   value={formData.supplier || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                   placeholder="e.g. Acme Auto Parts (optional)"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Quantity</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Quantity</label>
                 <div className="flex gap-2">
                   <input
                     type="number" step="0.01"
@@ -1235,14 +1235,14 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                     min="1"
                     value={formData.quantity || ''}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                     placeholder="e.g. 50"
                   />
                   <select
                     name="unit"
                     value={formData.unit || 'Pieces'}
                     onChange={handleInputChange}
-                    className="w-28 px-2 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 text-sm"
+                    className="w-28 px-2 py-2 border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-slate-50 text-sm"
                   >
                     <option value="Pieces">Pieces</option>
                     <option value="Litres">Litres</option>
@@ -1252,7 +1252,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Rate Per Part (₹)</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Rate Per Part (₹)</label>
                 <input
                   type="number" step="0.01"
                   name="costPerUnit"
@@ -1260,7 +1260,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                   min="0"
                   value={formData.costPerUnit || ''}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                   placeholder="e.g. 1500"
                 />
               </div>
@@ -1271,13 +1271,13 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
               <button
                 type="button"
                 onClick={handleCancelIntent}
-                className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium text-sm"
+                className="px-4 py-2 border border-slate-300 text-slate-700 rounded-sm hover:bg-slate-50 transition-colors font-medium text-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors font-medium text-sm shadow-sm"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Inventory
@@ -1288,8 +1288,8 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
       )}
 
       {isFormOpen && editingId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm ">
+          <div className="bg-white rounded-sm w-full max-w-2xl shadow-sm overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
               <h3 className="font-semibold text-lg text-slate-800">Edit Part Details</h3>
               <button onClick={handleCancelIntent} className="text-slate-400 hover:text-slate-600 rounded-full p-2 hover:bg-slate-100 transition-colors">
@@ -1303,26 +1303,26 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                   <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-4">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-800 tracking-tight">Successfully Updated</h3>
+                  <h3 className="text-lg font-bold text-[#006699] uppercase tracking-wide">Successfully Updated</h3>
                   <p className="text-slate-500 mt-2">The part info has been saved.</p>
                 </div>
               )}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Part Number</label>
+                  <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase mb-1.5">Part Number</label>
                   <input
                     type="text"
                     name="partNumber"
                     value={formData.partNumber || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-sm outline-none focus:border-blue-400/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
                     placeholder="e.g. PN-101"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Part Name</label>
+                  <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase mb-1.5">Part Name</label>
                   <input
                     type="text"
                     name="name"
@@ -1330,7 +1330,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                     list="partNamesListModal"
                     value={formData.name || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-sm outline-none focus:border-blue-400/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
                     placeholder="Select or enter part name"
                   />
                   <datalist id="partNamesListModal">
@@ -1341,19 +1341,19 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Supplier</label>
+                  <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase mb-1.5">Supplier</label>
                   <input
                     type="text"
                     name="supplier"
                     value={formData.supplier || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-sm outline-none focus:border-blue-400/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
                     placeholder="e.g. Acme Auto Parts (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Quantity</label>
+                  <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase mb-1.5">Quantity</label>
                   <input
                     type="number" step="0.01"
                     name="quantity"
@@ -1361,12 +1361,12 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                     min="1"
                     value={formData.quantity || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-sm outline-none focus:border-blue-400/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Rate Per Part (₹)</label>
+                  <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase mb-1.5">Rate Per Part (₹)</label>
                   <input
                     type="number" step="0.01"
                     name="costPerUnit"
@@ -1374,7 +1374,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                     min="0"
                     value={formData.costPerUnit || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-sm outline-none focus:border-blue-400/20 focus:border-indigo-500 bg-white transition-all shadow-sm"
                   />
                 </div>
               </div>
@@ -1383,7 +1383,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                 <button
                   type="button"
                   onClick={handleCancelIntent}
-                  className="px-5 py-2.5 border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors font-medium text-sm"
+                  className="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-sm hover:bg-slate-50 transition-colors font-medium text-sm"
                   disabled={isUpdating}
                 >
                   Cancel
@@ -1391,7 +1391,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className={`flex items-center justify-center h-10 px-6 bg-indigo-600 text-white rounded-lg transition-all font-medium text-sm shadow-sm min-w-[140px] ${isUpdating ? 'opacity-80 cursor-not-allowed bg-indigo-700' : 'hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/30'}`}
+                  className={`flex items-center justify-center h-10 px-6 bg-indigo-600 text-white rounded-sm transition-all font-medium text-sm shadow-sm min-w-[140px] ${isUpdating ? 'opacity-80 cursor-not-allowed bg-indigo-700' : 'hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-500/30'}`}
                 >
                   {isUpdating ? (
                     <div className="w-5 h-5 border-2 border-indigo-200/40 border-t-white rounded-full animate-spin"></div>
@@ -1409,8 +1409,8 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
       )}
 
       {/* Parts Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+      <div className="border border-slate-300 mb-8">
+        <div className="p-4 border-b border-slate-300 bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div className="flex items-center">
             <Wrench className="w-5 h-5 text-slate-500 mr-2" />
             <h3 className="font-semibold text-slate-800">Current Stock</h3>
@@ -1424,14 +1424,14 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                 placeholder="Search parts..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-sm text-sm focus:outline-none focus:border-blue-400"
               />
             </div>
             
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="px-2 py-1 text-[13px] border border-slate-300 rounded-sm text-sm focus:outline-none focus:border-blue-400 bg-white"
             >
               <option value="All">All Status</option>
               <option value="Adequate">Adequate</option>
@@ -1442,7 +1442,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
               <button
                 onClick={handleDeleteSelected}
                 disabled={selectedParts.length === 0}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center whitespace-nowrap min-w-[100px] ${
+                className={`px-2 py-1 text-[13px] rounded-sm text-sm font-medium transition-colors flex items-center justify-center whitespace-nowrap min-w-[100px] ${
                   selectedParts.length > 0
                     ? 'bg-red-600 text-white hover:bg-red-700'
                     : 'bg-slate-100 text-slate-400 cursor-not-allowed'
@@ -1455,8 +1455,8 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+          <table className="w-full text-[12px] text-left border-collapse">
+            <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-300">
               <tr>
                 <th className="px-4 py-3 w-12 text-center">
                   <input
@@ -1475,7 +1475,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                 <th className="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {filteredParts.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
@@ -1516,12 +1516,12 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                       </td>
                       <td className="px-4 py-3 text-slate-600 text-right">{formatCurrency(part.costPerUnit)}</td>
                       <td className="px-4 py-3 font-medium text-slate-900 text-right">{formatCurrency(totalValue)}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-2 py-1 border-r border-slate-300 last:border-r-0">
                         <div className="flex items-center justify-end space-x-2">
                           {(canAdd || canReduce) && (
                             <button
                               onClick={() => setStockAdjustId(part.id)}
-                              className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors"
+                              className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-sm hover:bg-indigo-50 transition-colors"
                               title="Adjust Stock"
                             >
                               <SlidersHorizontal className="w-4 h-4" />
@@ -1530,7 +1530,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                           {(canAdd || canReduce) && (
                             <button
                               onClick={() => handleEdit(part)}
-                              className="p-1.5 text-slate-400 hover:text-blue-600 rounded-md hover:bg-blue-50 transition-colors"
+                              className="p-1.5 text-slate-400 hover:text-blue-600 rounded-sm hover:bg-blue-50 transition-colors"
                               title="Edit"
                             >
                               <Edit2 className="w-4 h-4" />
@@ -1588,9 +1588,9 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
       {/* Adjust Stock Modal */}
       {stockAdjustId && (
         <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
+          <div className="bg-white rounded-sm shadow-sm p-6 max-w-md w-full">
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+              <div className="p-2 bg-indigo-100 text-indigo-600 rounded-sm">
                 <SlidersHorizontal className="w-5 h-5" />
               </div>
               <h3 className="text-lg font-bold text-slate-800">Adjust Stock</h3>
@@ -1600,15 +1600,15 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
             </p>
             
             <div className="space-y-4 mb-6">
-              <div className="flex bg-slate-100 p-1 rounded-lg">
+              <div className="flex bg-slate-100 p-1 rounded-sm">
                 <button
-                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${stockAdjustType === 'in' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`flex-1 py-1.5 text-sm font-medium rounded-sm transition-colors ${stockAdjustType === 'in' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                   onClick={() => setStockAdjustType('in')}
                 >
                   Stock In
                 </button>
                 <button
-                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${stockAdjustType === 'out' ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`flex-1 py-1.5 text-sm font-medium rounded-sm transition-colors ${stockAdjustType === 'out' ? 'bg-white text-amber-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                   onClick={() => setStockAdjustType('out')}
                 >
                   Stock Out
@@ -1617,11 +1617,11 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
 
               {stockAdjustType === 'out' && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Reason for Reduction</label>
+                  <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Reason for Reduction</label>
                   <select 
                     value={stockReduceReason}
                     onChange={(e) => setStockReduceReason(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                   >
                     <option value="sold_to_subdealer">Parts sold separately</option>
                     <option value="defective">Damaged / Defective</option>
@@ -1634,25 +1634,25 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Quantity</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Quantity</label>
                 <input
                   type="number" step="0.01"
                   min="0.01"
                   value={stockAdjustQuantity}
                   onChange={(e) => setStockAdjustQuantity(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                   placeholder="e.g. 5"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Remarks / Reference (Optional)</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Remarks / Reference (Optional)</label>
                 <input
                   type="text"
                   value={stockAdjustReference}
                   onChange={(e) => setStockAdjustReference(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
                   placeholder={stockReduceReason === 'sold_to_subdealer' ? "Sub-dealer name" : stockReduceReason === 'defective' ? "Defect detail" : "Any references"}
                 />
               </div>
@@ -1661,7 +1661,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
             <div className="flex justify-end gap-3">
               <button 
                 onClick={() => { setStockAdjustId(null); setStockAdjustQuantity(''); setStockAdjustType('in'); setStockReduceReason('manual_adjustment'); setStockAdjustReference(''); }}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-sm transition-colors"
               >
                 Cancel
               </button>
@@ -1672,7 +1672,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
                   Number(stockAdjustQuantity) <= 0 || 
                   (stockAdjustType === 'out' && Number(stockAdjustQuantity) > (parts.find(p => p.id === stockAdjustId)?.quantity || 0))
                 }
-                className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`px-4 py-2 text-sm font-medium text-white rounded-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   stockAdjustType === 'in' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-600 hover:bg-amber-700'
                 }`}
               >
@@ -1686,7 +1686,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
       {/* Import Status Overlay */}
       {importStatus && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full flex flex-col items-center text-center">
+          <div className="bg-white rounded-sm shadow-sm p-8 max-w-sm w-full flex flex-col items-center text-center">
             <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
             <h3 className="text-lg font-bold text-slate-800 mb-2">Importing Parts</h3>
             <p className="text-slate-600 font-medium text-sm">
@@ -1699,9 +1699,9 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
       {/* Message Modal */}
       {importMessage && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
-          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-sm shadow-sm p-8 max-w-sm w-full flex flex-col items-center text-center zoom-in duration-200">
             {importMessage.type === 'success' && <CheckCircle2 className="w-16 h-16 text-emerald-500 mb-4" />}
-            {importMessage.type === 'error' && <AlertTriangle className="w-16 h-16 text-rose-500 mb-4" />}
+            {importMessage.type === 'error' && <AlertTriangle className="w-16 h-16 text-[#cc0000] mb-4" />}
             {importMessage.type === 'warning' && <AlertTriangle className="w-16 h-16 text-amber-500 mb-4" />}
             
             <h3 className="text-xl font-bold text-slate-800 mb-2">{importMessage.title}</h3>
@@ -1711,7 +1711,7 @@ export function PartsInventory({ parts, inventoryLogs, onAddPart, onUpdatePart, 
             
             <button 
               onClick={() => setImportMessage(null)}
-              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-colors"
+              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-sm font-medium transition-colors"
             >
               Close
             </button>

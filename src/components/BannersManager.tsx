@@ -151,10 +151,10 @@ export function BannersManager() {
   };
 
   return (
-    <div className="bg-white/60 backdrop-blur-xl rounded-[20px] shadow-[0_4px_24px_-8px_rgba(14,165,233,0.1)] overflow-hidden transition-all duration-300 hover:shadow-[0_8px_32px_-8px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/15 border border-white/50 mt-8">
-      <div className="px-8 py-6 border-b border-sky-500/10 flex items-center justify-between bg-white/40">
+    <div className="bg-[#f0f0f0] rounded-sm shadow-sm overflow-hidden transition-all duration-300 hover:shadow-sm ring-1 ring-sky-500/15 border border-white/50 mt-8">
+      <div className="px-8 py-6 border-b border-slate-300 flex items-center justify-between bg-white/40">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-[0_4px_12px_rgba(14,165,233,0.3)]">
+          <div className="w-10 h-10 flex items-center justify-center bg-white rounded-sm shadow-sm">
             <img src="https://cdn-icons-png.flaticon.com/512/5889/5889158.png" className="w-6 h-6 object-contain" alt="Banners" />
           </div>
           <div>
@@ -164,7 +164,7 @@ export function BannersManager() {
         </div>
       </div>
       
-      <div className="p-8 border-b border-sky-500/10 bg-white/20">
+      <div className="p-8 border-b border-slate-300 bg-white/20">
         <form onSubmit={handleAddBanner} className="space-y-4">
           {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
           <div className="flex gap-4 items-center">
@@ -173,20 +173,20 @@ export function BannersManager() {
               accept="image/*"
               onChange={handleFileChange}
               disabled={loading}
-              className="flex-1 bg-white/60 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 transition-all focus:outline-none"
+              className="flex-1 bg-white/60 border border-slate-300 rounded-sm px-4 py-2.5 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100 transition-all focus:outline-none"
             />
             <button
               type="submit"
               disabled={loading || !newBannerUrl.trim()}
-              className="px-6 py-2.5 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-xl text-sm font-medium hover:from-sky-600 hover:to-blue-600 disabled:opacity-50 transition-all shadow-[0_4px_12px_rgba(14,165,233,0.3)] flex items-center gap-2 h-[42px]"
+              className="px-6 py-2.5 bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] rounded-sm text-sm font-medium  disabled:opacity-50 transition-all shadow-sm flex items-center gap-2 h-[42px]"
             >
               <img src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png" className="w-4 h-4 object-contain" alt="Add" /> Upload
             </button>
           </div>
           {newBannerUrl && (
-            <div className="mt-4 border border-sky-200 rounded-xl p-2 inline-block">
+            <div className="mt-4 border border-sky-200 rounded-sm p-2 inline-block">
               <p className="text-xs text-slate-500 mb-2">Preview:</p>
-              <img src={newBannerUrl} alt="Preview" className="h-32 object-cover rounded-lg" />
+              <img src={newBannerUrl} alt="Preview" className="h-32 object-cover rounded-sm" />
             </div>
           )}
         </form>
@@ -200,12 +200,12 @@ export function BannersManager() {
              </div>
           ) : (
             banners.map(b => (
-              <div key={b.id} className="relative group rounded-xl overflow-hidden shadow-sm border border-slate-200">
+              <div key={b.id} className="relative group rounded-sm overflow-hidden shadow-sm border border-slate-300">
                 <img src={b.imageUrl} alt="Banner" className="w-full h-32 object-cover" />
-                <div className="absolute inset-0 border-2 border-transparent group-hover:border-sky-500/50 rounded-xl pointer-events-none transition-colors"></div>
+                <div className="absolute inset-0 border-2 border-transparent group-hover:border-sky-500/50 rounded-sm pointer-events-none transition-colors"></div>
                 <button
                   onClick={() => setDeletingBannerId(b.id)}
-                  className="absolute top-2 right-2 p-1.5 bg-white/90 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+                  className="absolute top-2 right-2 p-1.5 bg-white/90 text-red-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
                   title="Delete Banner"
                 >
                   <img src="https://cdn-icons-png.flaticon.com/512/484/484662.png" className="w-4 h-4 object-contain" alt="Delete" />

@@ -29,7 +29,7 @@ export function Header({ currentView, setCurrentView, userRole, userEmail }: Pro
   };
 
   return (
-    <div className="flex flex-col w-full bg-white font-sans border-b border-slate-200">
+    <div className="flex flex-col w-full bg-white font-sans border-b border-slate-300">
       {/* Top Section */}
       <div className="flex justify-between items-end px-4 py-2 bg-white flex-wrap gap-4">
         {/* Logo Area */}
@@ -85,7 +85,7 @@ export function Header({ currentView, setCurrentView, userRole, userEmail }: Pro
               </button>
               {activeDropdown === 'vehicles' && (
                 <div 
-                  className="absolute left-0 top-full bg-white border border-gray-200 shadow-xl min-w-[220px] py-1 text-sm normal-case font-normal text-gray-800"
+                  className="absolute left-0 top-full bg-white border border-gray-200 shadow-sm min-w-[220px] py-1 text-sm normal-case font-normal text-gray-800"
                   onMouseEnter={() => setActiveDropdown('vehicles')}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
@@ -112,7 +112,7 @@ export function Header({ currentView, setCurrentView, userRole, userEmail }: Pro
               </button>
               {activeDropdown === 'inventory' && (
                 <div 
-                  className="absolute left-0 top-full bg-white border border-gray-200 shadow-xl min-w-[220px] py-1 text-sm normal-case font-normal text-gray-800"
+                  className="absolute left-0 top-full bg-white border border-gray-200 shadow-sm min-w-[220px] py-1 text-sm normal-case font-normal text-gray-800"
                   onMouseEnter={() => setActiveDropdown('inventory')}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
@@ -142,7 +142,7 @@ export function Header({ currentView, setCurrentView, userRole, userEmail }: Pro
               </button>
               {activeDropdown === 'sales' && (
                 <div 
-                  className="absolute left-0 top-full bg-white border border-gray-200 shadow-xl min-w-[220px] py-1 text-sm normal-case font-normal text-gray-800"
+                  className="absolute left-0 top-full bg-white border border-gray-200 shadow-sm min-w-[220px] py-1 text-sm normal-case font-normal text-gray-800"
                   onMouseEnter={() => setActiveDropdown('sales')}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >
@@ -178,7 +178,7 @@ export function Header({ currentView, setCurrentView, userRole, userEmail }: Pro
               </button>
               {activeDropdown === 'admin' && (
                 <div 
-                  className="absolute left-0 top-full bg-white border border-gray-200 shadow-xl min-w-[240px] py-1 text-sm normal-case font-normal text-gray-800"
+                  className="absolute left-0 top-full bg-white border border-gray-200 shadow-sm min-w-[240px] py-1 text-sm normal-case font-normal text-gray-800"
                   onMouseEnter={() => setActiveDropdown('admin')}
                   onMouseLeave={() => setActiveDropdown(null)}
                 >

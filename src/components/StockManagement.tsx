@@ -356,23 +356,23 @@ export function StockManagement({
     const totalAmount = completedTransactions.reduce((acc, sale) => acc + (sale.totalAmount || 0), 0);
 
     return (
-      <div className="space-y-6 max-w-7xl mx-auto">
+      <div className="space-y-6 w-full">
         <div className="flex items-center space-x-4 mb-6">
           <button 
             onClick={() => setViewingSubDealer(null)} 
-            className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition-colors"
+            className="p-2 bg-slate-100 text-slate-600 rounded-sm hover:bg-slate-200 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{viewingSubDealer} Detailed History</h2>
+            <h2 className="text-lg font-bold text-[#006699] uppercase tracking-wide">{viewingSubDealer} Detailed History</h2>
             <p className="text-slate-500 mt-1">View all past and current requests and purchases.</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-             <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
+          <div className="bg-[#f0f0f0] p-4 border border-slate-300 mb-4">
+             <div className="p-3 bg-blue-50 rounded-sm text-blue-600">
                <Package className="w-6 h-6" />
              </div>
              <div>
@@ -380,8 +380,8 @@ export function StockManagement({
                <p className="text-2xl font-bold text-slate-800">{totalTransactions}</p>
              </div>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-             <div className="p-3 bg-green-50 rounded-lg text-green-600">
+          <div className="bg-[#f0f0f0] p-4 border border-slate-300 mb-4">
+             <div className="p-3 bg-green-50 rounded-sm text-green-600">
                <Check className="w-6 h-6" />
              </div>
              <div>
@@ -389,8 +389,8 @@ export function StockManagement({
                <p className="text-2xl font-bold text-slate-800">{totalBought}</p>
              </div>
           </div>
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-             <div className="p-3 bg-amber-50 rounded-lg text-amber-600">
+          <div className="bg-[#f0f0f0] p-4 border border-slate-300 mb-4">
+             <div className="p-3 bg-amber-50 rounded-sm text-amber-600">
                <BarChart className="w-6 h-6" />
              </div>
              <div>
@@ -406,7 +406,7 @@ export function StockManagement({
             const requestModels = req.models || (req.vehicleModel ? [{ model: req.vehicleModel, quantity: req.quantity || 0 }] : []);
             const requestParts = req.parts || [];
             return (
-              <div key={req.id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:shadow-md transition-shadow">
+              <div key={req.id} className="bg-white rounded-sm border border-slate-300 shadow-sm p-4 hover:shadow-md transition-shadow">
                 <div className="flex flex-col sm:flex-row justify-between items-start mb-4 gap-4">
                   <div>
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium mb-2 ${
@@ -431,8 +431,8 @@ export function StockManagement({
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {requestModels.length > 0 && (
-                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                       <h6 className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-200 pb-1">Vehicles</h6>
+                    <div className="bg-slate-50 p-3 rounded-sm border border-slate-100">
+                       <h6 className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-300 pb-1">Vehicles</h6>
                        <ul className="space-y-1">
                          {requestModels.map((m, i) => (
                            <li key={i} className="text-xs">
@@ -443,7 +443,7 @@ export function StockManagement({
                              {req.status === 'completed' && m.selectedVehicles && m.selectedVehicles.length > 0 && (
                                <div className="mt-1 text-[10px] text-slate-500 flex flex-wrap gap-1">
                                  {m.selectedVehicles.map((v: any) => (
-                                   <span key={v.id} className="bg-white px-1 py-0.5 rounded border border-slate-200">{v.chassisNumber}</span>
+                                   <span key={v.id} className="bg-white px-1 py-0.5 rounded border border-slate-300">{v.chassisNumber}</span>
                                  ))}
                                </div>
                              )}
@@ -453,8 +453,8 @@ export function StockManagement({
                     </div>
                   )}
                   {requestParts.length > 0 && (
-                     <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                       <h6 className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-200 pb-1">Parts</h6>
+                     <div className="bg-slate-50 p-3 rounded-sm border border-slate-100">
+                       <h6 className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-300 pb-1">Parts</h6>
                        <ul className="space-y-1 text-xs">
                          {requestParts.map((p, i) => (
                            <li key={i} className="flex justify-between font-medium text-slate-700">
@@ -475,16 +475,16 @@ export function StockManagement({
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Stock Management</h2>
+          <h2 className="text-lg font-bold text-[#006699] uppercase tracking-wide">Stock Management</h2>
           <p className="text-slate-500 mt-1">Manage overall vehicle stock and sub-dealer bulk requests.</p>
         </div>
         {!isFormOpen && (
           <button
              onClick={() => setIsFormOpen(true)}
-             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium"
+             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Sub-Dealer Request
@@ -493,59 +493,59 @@ export function StockManagement({
       </div>
 
       {isFormOpen && (
-        <div className="bg-white rounded-[16px] border border-[var(--color-border)] shadow-sm hover:shadow-md transition-all overflow-hidden relative group">
+        <div className="bg-white rounded-sm border border-slate-300 shadow-sm hover:shadow-md transition-all overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-500">
             <Plus className="w-24 h-24" />
           </div>
           <div className="p-5 border-b border-slate-100 bg-white flex justify-between items-center relative z-10">
             <h3 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
-              <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-md">
+              <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-sm">
                 <Plus className="w-4 h-4" />
               </div>
               Create Sub-Dealer Request
             </h3>
-            <button onClick={handleCancelIntent} className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-lg">
+            <button onClick={handleCancelIntent} className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-sm">
                <X className="w-5 h-5" />
             </button>
           </div>
           <form onSubmit={handleSubmit} className="p-6 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Sub-Dealer Name *</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Sub-Dealer Name *</label>
                 <input
                   type="text"
                   required
                   value={formData.subDealerName}
                   onChange={(e) => setFormData({ ...formData, subDealerName: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                   placeholder="e.g. Metro Motors"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Phone Number</label>
                 <input
                   type="text"
                   value={formData.subDealerPhone}
                   onChange={(e) => setFormData({ ...formData, subDealerPhone: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                   placeholder="e.g. +91 9876543210"
                 />
               </div>
 
                <div className="md:col-span-2 lg:col-span-1">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Address</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Address</label>
                 <input
                   type="text"
                   value={formData.subDealerAddress}
                   onChange={(e) => setFormData({ ...formData, subDealerAddress: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                   placeholder="e.g. 123 Main St"
                 />
               </div>
 
                <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Total Amount (₹)</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Total Amount (₹)</label>
                 <input
                   type="number" step="0.01"
                   value={formData.totalAmount}
@@ -553,17 +553,17 @@ export function StockManagement({
                     const val = e.target.value;
                     setFormData({ ...formData, totalAmount: val === '' ? '' : parseFloat(val) })
                   }}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                 />
               </div>
 
               <div className="md:col-span-2 lg:col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">Remarks / Notes</label>
+                <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Remarks / Notes</label>
                 <input
                   type="text"
                   value={formData.remarks}
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                   placeholder="Any additional details"
                 />
               </div>
@@ -608,13 +608,13 @@ export function StockManagement({
                   });
 
                   return (
-                    <div key={index} className="flex flex-col sm:flex-row gap-4 mb-3 p-3 bg-slate-50 border border-slate-200 rounded-lg items-center">
+                    <div key={index} className="flex flex-col sm:flex-row gap-4 mb-3 p-3 bg-slate-50 border border-slate-300 rounded-sm items-center">
                       <div className="flex-1">
                         <select
                           required
                           value={mRow.model}
                           onChange={(e) => updateModelRow(index, 'model', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                         >
                           <option value="" disabled>Select model...</option>
                           {vehicleModels.map(m => (
@@ -627,7 +627,7 @@ export function StockManagement({
                           <select
                             value={mRow.color || 'Any'}
                             onChange={(e) => updateModelRow(index, 'color', e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                            className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                           >
                             <option value="Any">Any Color</option>
                             {filteredAvailableColors.map(c => {
@@ -651,7 +651,7 @@ export function StockManagement({
                             const val = e.target.value;
                             updateModelRow(index, 'quantity', val === '' ? '' : parseInt(val));
                           }}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                         />
                       </div>
                       {mRow.model && typeof mRow.quantity === 'number' && mRow.quantity > maxAvailable && (
@@ -679,13 +679,13 @@ export function StockManagement({
                 {formData.parts.map((pRow, index) => {
                   const selectedPart = parts.find(p => p.id === pRow.partId);
                   return (
-                    <div key={index} className="flex flex-col sm:flex-row gap-4 mb-3 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    <div key={index} className="flex flex-col sm:flex-row gap-4 mb-3 p-3 bg-slate-50 border border-slate-300 rounded-sm">
                       <div className="flex-1">
                         <select
                           required
                           value={pRow.partId}
                           onChange={(e) => updatePartRow(index, 'partId', e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                          className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                         >
                           <option value="" disabled>Select part...</option>
                           {parts.map(p => (
@@ -703,7 +703,7 @@ export function StockManagement({
                             const val = e.target.value;
                             updatePartRow(index, 'quantity', val === '' ? '' : parseInt(val));
                           }}
-                          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                         />
                       </div>
                       {selectedPart && typeof pRow.quantity === 'number' && pRow.quantity > selectedPart.quantity && (
@@ -725,13 +725,13 @@ export function StockManagement({
                <button
                 type="button"
                 onClick={handleCancelIntent}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-sm transition-colors"
                >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium"
+                className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Submit Request
@@ -742,10 +742,10 @@ export function StockManagement({
       )}
 
       {/* Stock Overview Metrics */}
-       <h3 className="text-lg font-semibold text-slate-800 mt-8 mb-4">Stock Overview</h3>
+       <h3 className="text-lg font-bold text-[#006699] uppercase tracking-wide mt-6 mb-4">Stock Overview</h3>
        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-           <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
+        <div className="bg-[#f0f0f0] p-4 border border-slate-300 mb-4">
+           <div className="p-3 bg-blue-50 rounded-sm text-blue-600">
              <Car className="w-6 h-6" />
            </div>
            <div>
@@ -754,8 +754,8 @@ export function StockManagement({
            </div>
         </div>
 
-         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-           <div className="p-3 bg-green-50 rounded-lg text-green-600">
+         <div className="bg-[#f0f0f0] p-4 border border-slate-300 mb-4">
+           <div className="p-3 bg-green-50 rounded-sm text-green-600">
              <Check className="w-6 h-6" />
            </div>
            <div>
@@ -764,8 +764,8 @@ export function StockManagement({
            </div>
         </div>
 
-         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-           <div className="p-3 bg-amber-50 rounded-lg text-amber-600">
+         <div className="bg-[#f0f0f0] p-4 border border-slate-300 mb-4">
+           <div className="p-3 bg-amber-50 rounded-sm text-amber-600">
              <BarChart className="w-6 h-6" />
            </div>
            <div>
@@ -777,7 +777,7 @@ export function StockManagement({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {Object.entries(stockByModel).map(([model, count]) => (
-          <div key={model} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+          <div key={model} className="bg-[#f0f0f0] p-3 border border-slate-300 mb-4">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Model</span>
             <span className="text-md font-bold text-slate-800 truncate mb-2" title={model}>{model}</span>
             <span className="text-sm font-medium text-slate-600 inline-block bg-slate-100 rounded px-2 py-1 self-start">
@@ -788,24 +788,24 @@ export function StockManagement({
       </div>
 
       {/* Sub Dealer Requests */}
-      <h3 className="text-lg font-semibold text-slate-800 mt-8 mb-4">Sub-Dealer Requests</h3>
+      <h3 className="text-lg font-bold text-[#006699] uppercase tracking-wide mt-6 mb-4">Sub-Dealer Requests</h3>
       
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-4">
+      <div className="bg-[#f0f0f0] p-3 border border-slate-300 mb-4">
          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            <div>
-             <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Search Dealer</label>
+             <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Search Dealer</label>
              <input 
                type="text" 
-               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
+               className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400" 
                placeholder="Search by name..." 
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}
              />
            </div>
            <div>
-             <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Status</label>
+             <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Status</label>
              <select 
-               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+               className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                value={statusFilter}
                onChange={(e) => setStatusFilter(e.target.value)}
              >
@@ -815,19 +815,19 @@ export function StockManagement({
              </select>
            </div>
            <div>
-             <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Date From</label>
+             <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Date From</label>
              <input 
                type="date" 
-               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+               className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                value={dateFrom}
                onChange={(e) => setDateFrom(e.target.value)}
              />
            </div>
            <div>
-             <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Date To</label>
+             <label className="text-[#cc0000] text-[11px] mb-1 font-medium select-none uppercase">Date To</label>
              <input 
                type="date" 
-               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+               className="w-full px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400"
                value={dateTo}
                onChange={(e) => setDateTo(e.target.value)}
              />
@@ -835,23 +835,23 @@ export function StockManagement({
          </div>
       </div>
 
-      <div className="bg-white rounded-[16px] border border-[var(--color-border)] shadow-[var(--shadow-sm)] overflow-hidden mb-8">
+      <div className="border border-slate-300 mb-8">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50/80 text-slate-500 uppercase text-[11px] font-semibold whitespace-nowrap tracking-wider border-b border-slate-100">
+          <table className="w-full text-[12px] text-left border-collapse">
+            <thead className="bg-[#ececec] border-b border-slate-300 text-slate-600 font-bold uppercase text-[11px]">
               <tr>
-                 <th className="px-4 py-3">S.No</th>
-                 <th className="px-4 py-3">Date</th>
-                 <th className="px-4 py-3">Sub-Dealer</th>
-                 <th className="px-4 py-3">Contact</th>
-                 <th className="px-4 py-3">Items</th>
-                 <th className="px-4 py-3">Amount</th>
-                 <th className="px-4 py-3">Remarks</th>
+                 <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">S.No</th>
+                 <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Date</th>
+                 <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Sub-Dealer</th>
+                 <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Contact</th>
+                 <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Items</th>
+                 <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Amount</th>
+                 <th className="px-2 py-1 border-r border-slate-300 last:border-r-0">Remarks</th>
                  <th className="px-4 py-3 text-center">Status</th>
                  <th className="px-4 py-3 text-right">Actions</th>
                </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {filteredSubDealerSales.length === 0 ? (
                  <tr>
                    <td colSpan={9} className="px-4 py-8 text-center text-slate-500">
@@ -869,7 +869,7 @@ export function StockManagement({
 
                    return (
                      <React.Fragment key={req.id}>
-                     <tr className={`hover:bg-slate-50/80 transition-colors cursor-pointer group ${isExpanded ? 'bg-slate-50/50' : ''}`} onClick={() => toggleExpand(req.id)}>
+                     <tr className={`hover:bg-[#ececec] transition-colors cursor-pointer group ${isExpanded ? 'bg-slate-50/50' : ''}`} onClick={() => toggleExpand(req.id)}>
                        <td className="px-4 py-4 text-slate-400 font-mono text-xs">
                          {index + 1}
                        </td>
@@ -903,7 +903,7 @@ export function StockManagement({
                        <td className="px-4 py-4 text-slate-800 font-bold whitespace-nowrap tracking-tight">₹{(req.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                        <td className="px-4 py-4 text-slate-500 text-xs truncate max-w-[150px]">{req.remarks || '-'}</td>
                        <td className="px-4 py-4 text-center">
-                         <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider whitespace-nowrap ${
+                         <span className={`inline-flex items-center px-2 py-0.5 rounded-sm text-[11px] font-bold uppercase tracking-wider whitespace-nowrap ${
                            req.status === 'completed'
                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
                              : 'bg-amber-50 text-amber-700 border border-amber-100'
@@ -917,14 +917,14 @@ export function StockManagement({
                              <>
                                <button
                                  onClick={() => onCompleteSubDealerSale(req)}
-                                 className="inline-flex items-center px-2 py-1.5 bg-green-600 text-white rounded-md text-xs font-medium hover:bg-green-700 transition-colors"
+                                 className="inline-flex items-center px-2 py-1.5 bg-green-600 text-white rounded-sm text-xs font-medium hover:bg-green-700 transition-colors"
                                  title="Complete"
                                >
                                  <Check className="w-4 h-4" />
                                </button>
                                <button
                                  onClick={() => setDeletingSaleReq(req)}
-                                 className="inline-flex items-center px-2 py-1.5 bg-red-500 text-white rounded-md text-xs font-medium hover:bg-red-600 transition-colors"
+                                 className="inline-flex items-center px-2 py-1.5 bg-red-500 text-white rounded-sm text-xs font-medium hover:bg-red-600 transition-colors"
                                  title="Delete Request"
                                >
                                  <Trash2 className="w-4 h-4" />
@@ -933,7 +933,7 @@ export function StockManagement({
                            ) : (
                               <button
                                onClick={() => setRevertingSaleReq(req)}
-                               className="inline-flex items-center px-3 py-1.5 bg-amber-500 text-white rounded-md text-xs font-medium hover:bg-amber-600 transition-colors"
+                               className="inline-flex items-center px-3 py-1.5 bg-amber-500 text-white rounded-sm text-xs font-medium hover:bg-amber-600 transition-colors"
                                title="Revert to Pending"
                              >
                                <RefreshCw className="w-3.5 h-3.5 mr-1" />
@@ -947,8 +947,8 @@ export function StockManagement({
                      {/* Expanded Row Details */}
                      {isExpanded && (
                         <tr>
-                          <td colSpan={9} className="p-0 border-b border-slate-200">
-                            <div className="bg-slate-50 px-8 py-5 border-t border-slate-200/60 shadow-inner">
+                          <td colSpan={9} className="p-0 border-b border-slate-300">
+                            <div className="bg-slate-50 px-8 py-5 border-t border-slate-300/60 shadow-inner">
                               <div className="flex justify-between items-center mb-4">
                                 <h5 className="font-semibold text-slate-800 text-sm flex items-center uppercase tracking-wider">
                                   <Info className="w-4 h-4 mr-2 text-slate-400" />
@@ -956,7 +956,7 @@ export function StockManagement({
                                 </h5>
                                 <button 
                                   onClick={() => handlePrintInvoice(req)}
-                                  className="flex items-center text-sm px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-md font-medium transition-colors"
+                                  className="flex items-center text-sm px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-sm font-medium transition-colors"
                                 >
                                   <Printer className="w-4 h-4 mr-1.5" />
                                   Print Invoice
@@ -964,13 +964,13 @@ export function StockManagement({
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
-                                  <h6 className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-200 pb-1">Vehicle Models</h6>
+                                  <h6 className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-300 pb-1">Vehicle Models</h6>
                                   {requestModels.length === 0 ? (
                                     <p className="text-xs text-slate-400 italic">No vehicles.</p>
                                   ) : (
                                     <ul className="space-y-2">
                                       {requestModels.map((m, i) => (
-                                        <li key={i} className="text-sm flex flex-col bg-white px-3 py-2 rounded shadow-sm border border-slate-100">
+                                        <li key={i} className="text-sm flex flex-col bg-white px-2 py-1 text-[13px] rounded shadow-sm border border-slate-100">
                                           <div className="flex justify-between">
                                             <span className="font-medium text-slate-700">{m.model}</span>
                                             <span className="font-semibold text-slate-800">x{m.quantity}</span>
@@ -980,7 +980,7 @@ export function StockManagement({
                                               <span className="font-semibold block mb-1">Assigned Chassis No:</span>
                                               <div className="flex flex-wrap gap-1">
                                                 {m.selectedVehicles.map((v: any) => (
-                                                  <span key={v.id} className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                                                  <span key={v.id} className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-300">
                                                     {v.chassisNumber}
                                                   </span>
                                                 ))}
@@ -993,7 +993,7 @@ export function StockManagement({
                                   )}
                                 </div>
                                 <div>
-                                  <h6 className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-200 pb-1">Parts & Components</h6>
+                                  <h6 className="text-xs font-bold text-slate-500 mb-2 border-b border-slate-300 pb-1">Parts & Components</h6>
                                   {requestParts.length === 0 ? (
                                     <p className="text-xs text-slate-400 italic">No parts.</p>
                                   ) : (

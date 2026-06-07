@@ -145,23 +145,23 @@ export function DashboardCards({
   ];
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-10">
+    <div className="space-y-8 w-full pb-10">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {cards.map((card, index) => {
           const Icon = card.icon;
           return (
-            <div key={index} className="bg-white/60 backdrop-blur-xl rounded-[20px] border border-green-500/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_40px_rgba(34,197,94,0.12)] transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-300/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <div key={index} className="bg-[#f0f0f0] p-4 border border-slate-300 shadow-sm transition-all sm:rounded-sm hover:bg-[#e8e8e8]">
+              <div className=""></div>
               <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className={`p-2.5 rounded-xl ${card.lightColor} ring-1 ring-inset ring-white/50 group-hover:scale-105 transition-transform duration-300 shadow-sm backdrop-blur-md`}>
+                <div className={`p-2.5 rounded-sm ${card.lightColor} shadow-sm border border-slate-300`}>
                   <Icon className={`w-5 h-5 ${card.textColor}`} />
                 </div>
               </div>
               
               <div className="relative z-10">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">{card.title}</p>
+                <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{card.title}</p>
                 <div className="flex items-baseline gap-2">
-                  <h3 className="text-2xl font-bold text-slate-800 tracking-tight">{card.value}</h3>
+                  <h3 className="text-lg font-bold text-[#006699] uppercase tracking-wide">{card.value}</h3>
                 </div>
               </div>
             </div>
@@ -171,16 +171,16 @@ export function DashboardCards({
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">
         {/* Vehicles Sold & Revenue */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-[20px] border border-green-500/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(34,197,94,0.08)]">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+        <div className="bg-[#f0f0f0] p-4 border border-slate-300 shadow-sm sm:rounded-sm">
+          <div className="bg-[#dcdcdc] px-3 py-1.5 border-b border-slate-300 flex justify-between items-center mb-4 gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-widest">Vehicles Sold & Revenue</h3>
+              <h3 className="text-lg font-bold text-[#006699] uppercase tracking-wide">Vehicles Sold & Revenue</h3>
               <p className="text-xs text-slate-500 mt-1">Industry-level view of retail vehicle sales.</p>
             </div>
             <select 
               value={vehicleTimePeriod} 
               onChange={e => setVehicleTimePeriod(e.target.value as any)}
-              className="text-xs bg-white/50 backdrop-blur-md border border-green-500/20 rounded-lg px-3 py-1.5 text-slate-700 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-green-400/50 transition-all cursor-pointer shadow-sm"
+              className="px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
             >
               <option value="month">Monthly</option>
               <option value="year">Yearly</option>
@@ -213,16 +213,16 @@ export function DashboardCards({
         </div>
 
         {/* Parts Sold & Revenue */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-[20px] border border-green-500/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(34,197,94,0.08)]">
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
+        <div className="bg-[#f0f0f0] p-4 border border-slate-300 shadow-sm sm:rounded-sm">
+          <div className="bg-[#dcdcdc] px-3 py-1.5 border-b border-slate-300 flex justify-between items-center mb-4 gap-4">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-widest">Revenue from Parts Sold</h3>
+              <h3 className="text-lg font-bold text-[#006699] uppercase tracking-wide">Revenue from Parts Sold</h3>
               <p className="text-xs text-slate-500 mt-1">Industry-level view of bulk parts/items moving to dealers.</p>
             </div>
             <select 
               value={partsTimePeriod} 
               onChange={e => setPartsTimePeriod(e.target.value as any)}
-              className="text-xs bg-white/50 backdrop-blur-md border border-green-500/20 rounded-lg px-3 py-1.5 text-slate-700 hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-green-400/50 transition-all cursor-pointer shadow-sm"
+              className="px-2 py-1 text-[13px] border border-slate-300 rounded-sm focus:outline-none focus:border-blue-400 bg-white"
             >
               <option value="month">Monthly</option>
               <option value="year">Yearly</option>

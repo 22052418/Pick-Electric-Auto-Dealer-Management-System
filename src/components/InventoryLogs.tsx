@@ -238,7 +238,7 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-200">
+    <div className="space-y-6 zoom-in-95 duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <button 
@@ -259,7 +259,7 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full h-[38px] pl-3 pr-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+                className="w-full h-[38px] pl-3 pr-3 text-sm text-slate-700 bg-white border border-slate-300 rounded-sm shadow-sm focus:outline-none focus:border-blue-400/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
                 title="Date From"
               />
             </div>
@@ -269,7 +269,7 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full h-[38px] pl-3 pr-3 text-sm text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+                className="w-full h-[38px] pl-3 pr-3 text-sm text-slate-700 bg-white border border-slate-300 rounded-sm shadow-sm focus:outline-none focus:border-blue-400/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
                 title="Date To"
               />
             </div>
@@ -278,7 +278,7 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
           <button
             onClick={handleSearch}
             disabled={isSearching}
-            className={`flex items-center justify-center shrink-0 w-[38px] h-[38px] bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm ${isSearching ? 'opacity-70 cursor-not-allowed' : ''}`}
+            className={`flex items-center justify-center shrink-0 w-[38px] h-[38px] bg-indigo-600 text-white rounded-sm hover:bg-indigo-700 transition-colors shadow-sm ${isSearching ? 'opacity-70 cursor-not-allowed' : ''}`}
             title="Search logs"
           >
             {isSearching ? (
@@ -300,7 +300,7 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
                   handleSearch();
                 }
               }}
-              className="w-full h-[38px] pl-9 pr-4 text-sm text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
+              className="w-full h-[38px] pl-9 pr-4 text-sm text-slate-700 bg-white border border-slate-300 rounded-sm shadow-sm focus:outline-none focus:border-blue-400/20 focus:border-indigo-500 transition-all placeholder:text-slate-400"
             />
           </div>
           
@@ -308,7 +308,7 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
             <button
               onClick={exportToExcel}
               disabled={isExporting}
-              className={`flex items-center justify-center shrink-0 w-[110px] h-[38px] px-4 border border-slate-200 bg-white text-slate-700 rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium ${isExporting ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`flex items-center justify-center shrink-0 w-[110px] h-[38px] px-4 border border-slate-300 bg-white text-slate-700 rounded-sm hover:bg-slate-50 transition-colors shadow-sm text-sm font-medium ${isExporting ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               {isExporting ? (
                 <div className="w-4 h-4 mr-2 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
@@ -320,10 +320,10 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
             <button
               onClick={handleDeleteSelected}
               disabled={selectedLogs.length === 0}
-              className={`flex items-center justify-center shrink-0 min-w-[100px] h-[38px] px-4 rounded-lg transition-colors shadow-sm text-sm font-medium whitespace-nowrap ${
+              className={`flex items-center justify-center shrink-0 min-w-[100px] h-[38px] px-4 rounded-sm transition-colors shadow-sm text-sm font-medium whitespace-nowrap ${
                 selectedLogs.length > 0
                   ? 'bg-rose-600 text-white hover:bg-rose-700'
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                  : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-300'
               }`}
             >
               <Trash2 className="w-4 h-4 mr-2" />
@@ -333,12 +333,12 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
         </div>
       </div>
 
-      <div className="bg-white shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] border border-slate-200 rounded-xl overflow-hidden">
+      <div className="border border-slate-300 mb-8">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-[12px] text-left border-collapse">
             <thead className="text-xs text-slate-500 bg-slate-50 sticky top-0 uppercase font-semibold">
               <tr>
-                <th className="px-6 py-4 border-b border-slate-200 w-12 text-center">
+                <th className="px-6 py-4 border-b border-slate-300 w-12 text-center">
                   <input
                     type="checkbox"
                     className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
@@ -346,11 +346,11 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
                     onChange={handleSelectAll}
                   />
                 </th>
-                <th className="px-3 py-4 border-b border-slate-200 w-10 text-center">S.No</th>
-                <th className="px-6 py-4 border-b border-slate-200">Date & Time</th>
-                <th className="px-6 py-4 border-b border-slate-200">Part</th>
-                <th className="px-6 py-4 border-b border-slate-200">Type / Reason</th>
-                <th className="px-6 py-4 border-b border-slate-200 text-right">Change</th>
+                <th className="px-3 py-4 border-b border-slate-300 w-10 text-center">S.No</th>
+                <th className="px-6 py-4 border-b border-slate-300">Date & Time</th>
+                <th className="px-6 py-4 border-b border-slate-300">Part</th>
+                <th className="px-6 py-4 border-b border-slate-300">Type / Reason</th>
+                <th className="px-6 py-4 border-b border-slate-300 text-right">Change</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 relative min-h-[200px]">
@@ -394,11 +394,11 @@ export function InventoryLogs({ logs, onDeleteLogs, onBack }: InventoryLogsProps
                     <td className="px-6 py-4 whitespace-nowrap text-slate-600">
                       {new Date(log.createdAt).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-2 py-1 border-r border-slate-300 last:border-r-0">
                       <div className="font-medium text-slate-900">{log.partName}</div>
                       {log.partNumber && <div className="text-xs text-slate-500 font-mono">{log.partNumber}</div>}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-2 py-1 border-r border-slate-300 last:border-r-0">
                       <div className="font-medium text-slate-800">{
                         log.type === 'production' ? 'Used in Production' :
                         log.type === 'sold_to_subdealer' ? 'Parts sold separately' :

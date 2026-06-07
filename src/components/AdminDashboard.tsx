@@ -3,9 +3,9 @@ import { db, auth } from '../firebase';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, deleteDoc, setDoc } from 'firebase/firestore';
 import { UserRole, PasswordRequest, SupportTeamMember } from '../types';
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail, updatePassword, updateEmail } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, sendPasswordResetEmail, updatePassword, updateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
-import { Shield, Key, Users, Settings, Mail, Lock, Plus, Save, Trash2, CheckCircle, Edit2, X, Phone, Image, UserPlus, Headset, Unlock, Images as ImagesIcon, Cog, ShieldCheck, UserCog, LifeBuoy, ImagePlay, LayoutTemplate } from 'lucide-react';
+import { Shield, Key, Users, Settings, Mail, Lock, Plus, Save, Trash2, CheckCircle, Edit2, X, Phone, Image, UserPlus, Headset, Unlock, Images as ImagesIcon, Cog, ShieldCheck, UserCog, LifeBuoy, ImagePlay, LayoutTemplate, Eye, EyeOff } from 'lucide-react';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 import { BannersManager } from './BannersManager';
 
@@ -26,10 +26,20 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
   
   // Update Profile state
   const [updatePass, setUpdatePass] = useState('');
+  const [updatePassConfirm, setUpdatePassConfirm] = useState('');
+  const [currentPasswordForPass, setCurrentPasswordForPass] = useState('');
+  const [showUpdatePass, setShowUpdatePass] = useState(false);
+  const [showUpdatePassConfirm, setShowUpdatePassConfirm] = useState(false);
+  const [showCurrentPasswordForPass, setShowCurrentPasswordForPass] = useState(false);
   const [updateUsername, setUpdateUsername] = useState('');
+  const [currentPasswordForUsername, setCurrentPasswordForUsername] = useState('');
+  const [showCurrentPasswordForUsername, setShowCurrentPasswordForUsername] = useState(false);
   const [updateName, setUpdateName] = useState('');
+  const [updateDealershipName, setUpdateDealershipName] = useState('');
+  const [updateBranchCode, setUpdateBranchCode] = useState('');
+  const [updateBranchName, setUpdateBranchName] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingUsername, setIsEditingUsername] = useState(false);
-  const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -193,12 +203,16 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
 
   const handleChangeEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser || !updateUsername) return;
+    if (!auth.currentUser || !auth.currentUser.email || !updateUsername || !currentPasswordForUsername) return;
     setLoading(true);
     setError('');
     setMessage('');
     
     try {
+      // Re-authenticate first
+      const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPasswordForUsername);
+      await reauthenticateWithCredential(auth.currentUser, credential);
+
       const newEmailVal = formatEmail(updateUsername);
       await updateEmail(auth.currentUser, newEmailVal);
       
@@ -210,11 +224,13 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
 
       setMessage('Username updated successfully!');
       setUpdateUsername('');
+      setCurrentPasswordForUsername('');
+      setIsEditingUsername(false);
     } catch (err: any) {
-      if (err.code === 'auth/operation-not-allowed') {
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setError('Incorrect current password.');
+      } else if (err.code === 'auth/operation-not-allowed') {
         setError('Firebase requires email verification to change username. Please disable "Require verification" in Firebase Console > Authentication > Settings > User Actions.');
-      } else if (err.code === 'auth/requires-recent-login') {
-        setError('Please log out and log back in to change your username.');
       } else {
         setError('Failed to update username: ' + err.message);
       }
@@ -225,17 +241,28 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser || !updatePass) return;
+    if (!auth.currentUser || !auth.currentUser.email || !updatePass || !currentPasswordForPass) return;
+    if (updatePass !== updatePassConfirm) {
+      setError('Please enter the same password.');
+      return;
+    }
     setLoading(true);
     setError('');
     setMessage('');
     try {
+      // Re-authenticate first
+      const credential = EmailAuthProvider.credential(auth.currentUser.email, currentPasswordForPass);
+      await reauthenticateWithCredential(auth.currentUser, credential);
+
       await updatePassword(auth.currentUser, updatePass);
       setMessage('Password updated successfully!');
       setUpdatePass('');
+      setUpdatePassConfirm('');
+      setCurrentPasswordForPass('');
+      setIsEditingPassword(false);
     } catch (err: any) {
-      if (err.code === 'auth/requires-recent-login') {
-        setError('Please log out and log back in to change your password.');
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setError('Incorrect current password.');
       } else {
         setError('Failed to update password: ' + err.message);
       }
@@ -244,8 +271,16 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
     }
   };
 
-  const handleUpdateHelpDesk = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const clearAllEdits = () => {
+    setIsEditingProfile(false);
+    setIsEditingUsername(false);
+    setIsEditingPassword(false);
+    setMessage('');
+    setError('');
+  };
+
+  const handleUpdateHelpDesk = async (e?: React.FormEvent) => {
+    if(e) e.preventDefault();
     setLoading(true);
     setError('');
     setMessage('');
@@ -279,12 +314,12 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
   }
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto py-10 px-4 sm:px-6 lg:px-8 space-y-10 pb-32">
+    <div className="w-full py-10 px-4 sm:px-6 lg:px-8 space-y-10 pb-32">
       {activeTab !== 'all' && (
         <div className="flex items-center">
           <button 
             onClick={() => onNavigate?.('all')}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 hover:text-sky-600 hover:border-sky-200 rounded-lg shadow-sm transition-all text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-600 hover:text-sky-600 hover:border-sky-200 rounded-sm shadow-sm transition-all text-sm font-medium"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Dashboard
@@ -301,9 +336,9 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div 
               onClick={() => onNavigate?.('authentication')} 
-              className="group bg-white rounded-2xl shadow-sm border border-slate-200 p-6 cursor-pointer hover:shadow-md hover:border-sky-500/30 transition-all"
+              className="group bg-white rounded-sm shadow-sm border border-slate-300 p-6 cursor-pointer hover:shadow-md hover:border-slate-400 transition-all"
             >
-              <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-[#0088cc] mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-sky-50 rounded-sm flex items-center justify-center text-[#0088cc] mb-4 group-hover:scale-110 transition-transform">
                 <img src="https://cdn-icons-png.flaticon.com/512/2092/2092063.png" className="w-6 h-6 object-contain" alt="Account Settings" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 tracking-tight mb-2">Account Settings</h3>
@@ -312,9 +347,9 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
 
             <div 
               onClick={() => onNavigate?.('staff')} 
-              className="group bg-white rounded-2xl shadow-sm border border-slate-200 p-6 cursor-pointer hover:shadow-md hover:border-sky-500/30 transition-all"
+              className="group bg-white rounded-sm shadow-sm border border-slate-300 p-6 cursor-pointer hover:shadow-md hover:border-slate-400 transition-all"
             >
-              <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-[#0088cc] mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-sky-50 rounded-sm flex items-center justify-center text-[#0088cc] mb-4 group-hover:scale-110 transition-transform">
                 <img src="https://cdn-icons-png.flaticon.com/512/10433/10433048.png" className="w-6 h-6 object-contain" alt="User Management" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 tracking-tight mb-2">User Management</h3>
@@ -323,9 +358,9 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
 
             <div 
               onClick={() => onNavigate?.('helpdesk')} 
-              className="group bg-white rounded-2xl shadow-sm border border-slate-200 p-6 cursor-pointer hover:shadow-md hover:border-sky-500/30 transition-all"
+              className="group bg-white rounded-sm shadow-sm border border-slate-300 p-6 cursor-pointer hover:shadow-md hover:border-slate-400 transition-all"
             >
-              <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-[#0088cc] mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-sky-50 rounded-sm flex items-center justify-center text-[#0088cc] mb-4 group-hover:scale-110 transition-transform">
                 <img src="https://cdn-icons-png.flaticon.com/512/1067/1067566.png" className="w-6 h-6 object-contain" alt="Help Desk" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 tracking-tight mb-2">Help Desk Settings</h3>
@@ -334,9 +369,9 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
 
             <div 
               onClick={() => onNavigate?.('support')} 
-              className="group bg-white rounded-2xl shadow-sm border border-slate-200 p-6 cursor-pointer hover:shadow-md hover:border-sky-500/30 transition-all"
+              className="group bg-white rounded-sm shadow-sm border border-slate-300 p-6 cursor-pointer hover:shadow-md hover:border-slate-400 transition-all"
             >
-              <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center text-amber-500 mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-amber-50 rounded-sm flex items-center justify-center text-amber-500 mb-4 group-hover:scale-110 transition-transform">
                 <img src="https://cdn-icons-png.flaticon.com/512/3014/3014227.png" className="w-6 h-6 object-contain" alt="Security" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 tracking-tight mb-2">Password Reset Requests</h3>
@@ -345,9 +380,9 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
 
             <div 
               onClick={() => onNavigate?.('banners')} 
-              className="group bg-white rounded-2xl shadow-sm border border-slate-200 p-6 cursor-pointer hover:shadow-md hover:border-sky-500/30 transition-all"
+              className="group bg-white rounded-sm shadow-sm border border-slate-300 p-6 cursor-pointer hover:shadow-md hover:border-slate-400 transition-all"
             >
-              <div className="w-12 h-12 bg-sky-50 rounded-xl flex items-center justify-center text-[#0088cc] mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-sky-50 rounded-sm flex items-center justify-center text-[#0088cc] mb-4 group-hover:scale-110 transition-transform">
                 <img src="https://cdn-icons-png.flaticon.com/512/5889/5889158.png" className="w-6 h-6 object-contain" alt="Banners" />
               </div>
               <h3 className="text-lg font-bold text-slate-800 tracking-tight mb-2">Banner Management</h3>
@@ -358,13 +393,13 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
       )}
 
       {message && (
-        <div className="flex items-center gap-3 p-4 bg-sky-50 text-sky-800 rounded-2xl border border-sky-100 text-sm font-medium shadow-sm animate-in fade-in slide-in-from-top-1">
+        <div className="flex items-center gap-3 p-4 bg-sky-50 text-sky-800 rounded-sm border border-sky-100 text-sm font-medium shadow-sm slide-in-from-top-1">
           <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" className="w-5 h-5 text-sky-500 object-contain" alt="Check" />
           {message}
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-3 p-4 bg-rose-50 text-rose-800 rounded-2xl border border-rose-100 text-sm font-medium shadow-sm animate-in fade-in slide-in-from-top-1">
+        <div className="flex items-center gap-3 p-4 bg-rose-50 text-rose-800 rounded-sm border border-rose-100 text-sm font-medium shadow-sm slide-in-from-top-1">
            <div className="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">!</div>
           {error}
         </div>
@@ -376,71 +411,147 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
         {(activeTab === 'display-name' || activeTab === 'username-password' || activeTab === 'authentication' || activeTab === 'helpdesk') && (
         <div className="w-full space-y-8">
           {(activeTab === 'display-name' || activeTab === 'username-password' || activeTab === 'authentication') && (
-          <div className="bg-white/60 backdrop-blur-xl rounded-[20px] shadow-[0_4px_24px_-8px_rgba(14,165,233,0.1)] overflow-hidden transition-all duration-300 hover:shadow-[0_8px_32px_-8px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/15 border border-white/50">
-            <div className="px-6 py-5 border-b border-sky-500/10 flex items-center gap-4 bg-white/40">
-              <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-[0_4px_12px_rgba(14,165,233,0.3)]">
+          <div className="bg-[#f0f0f0] rounded-sm shadow-sm overflow-hidden transition-all duration-300 hover:shadow-sm ring-1 ring-sky-500/15 border border-white/50">
+            <div className="px-6 py-5 border-b border-slate-300 flex items-center gap-4 bg-white/40">
+              <div className="w-10 h-10 flex items-center justify-center bg-white rounded-sm shadow-sm">
                 <img src="https://cdn-icons-png.flaticon.com/512/2092/2092063.png" className="w-5 h-5 object-contain" alt="Account Settings" />
               </div>
               <div>
                 <h3 className="text-base font-semibold text-slate-800 tracking-tight">Account Settings</h3>
-                <p className="text-xs text-sky-600/80 mt-0.5 font-medium">Manage Display name, Username and Password</p>
+                <p className="text-xs text-sky-600/80 mt-0.5 font-medium">Manage Dealership Name, Branch Code, Branch Name, Display Name, Username and Password</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-sky-500/10">
-              {/* Name Pane */}
-              <div className="p-6 flex flex-col gap-4">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-800 tracking-tight">Display Name</p>
-                  <p className="text-sm text-slate-500 mt-1">
-                    Current: <strong className="text-slate-700 font-semibold">{currentUserRole?.name || 'Not Set'}</strong>
-                  </p>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/30 items-start">
+              {/* Profile Information Pane */}
+              <div className="md:col-span-2 p-6 flex flex-col gap-6 bg-white rounded-sm border border-sky-500/15 shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-lg font-semibold text-slate-800 tracking-tight">Profile Information</p>
+                    <p className="text-sm text-slate-500 mt-1">Manage your dealership name, branch code, branch name, and display name.</p>
+                  </div>
+                  {!isEditingProfile && (
+                    <button 
+                      onClick={() => { 
+                        clearAllEdits(); 
+                        setUpdateDealershipName(currentUserRole?.dealershipName || '');
+                        setUpdateBranchCode(currentUserRole?.branchCode || '');
+                        setUpdateBranchName(currentUserRole?.branchName || '');
+                        setUpdateName(currentUserRole?.name || '');
+                        setIsEditingProfile(true); 
+                      }}
+                      className="whitespace-nowrap px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-sm text-sm font-medium hover:bg-slate-50 focus:outline-none focus:border-blue-400/30 transition-all shadow-sm flex items-center gap-2"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                      Edit Profile
+                    </button>
+                  )}
                 </div>
                 
                 <div className="w-full">
-                  {!isEditingName ? (
-                    <button 
-                      onClick={() => setIsEditingName(true)}
-                      className="w-full sm:w-auto px-4 py-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 rounded-xl text-sm font-medium hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-sky-500/30 hover:border-sky-500/40 transition-all shadow-sm"
-                    >
-                      Change Name
-                    </button>
+                  {!isEditingProfile ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-sm border border-slate-100">
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Dealership Name</p>
+                        <p className="text-base text-slate-800 font-medium">{currentUserRole?.dealershipName || 'Not Set'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Display Name</p>
+                        <p className="text-base text-slate-800 font-medium">{currentUserRole?.name || 'Not Set'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Branch Code</p>
+                        <p className="text-base text-slate-800 font-medium">{currentUserRole?.branchCode || 'Not Set'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Branch Name</p>
+                        <p className="text-base text-slate-800 font-medium">{currentUserRole?.branchName || 'Not Set'}</p>
+                      </div>
+                    </div>
                   ) : (
                     <form onSubmit={(e) => { 
                       e.preventDefault();
                       setLoading(true);
-                      updateDoc(doc(db, 'users', currentUserRole!.id), { name: updateName })
+                      updateDoc(doc(db, 'users', currentUserRole!.id), {
+                        dealershipName: updateDealershipName,
+                        branchCode: updateBranchCode,
+                        branchName: updateBranchName,
+                        name: updateName,
+                      })
                         .then(() => {
-                          setMessage('Name updated successfully!');
-                          setIsEditingName(false);
-                          setUpdateName('');
+                          setMessage('Profile information updated successfully!');
+                          setIsEditingProfile(false);
                         })
-                        .catch((err) => setError('Failed to update name: ' + err.message))
+                        .catch((err) => setError('Failed to update profile: ' + err.message))
                         .finally(() => setLoading(false));
-                     }} className="space-y-3">
-                      <input
-                        type="text"
-                        required
-                        autoFocus
-                        value={updateName}
-                        onChange={e => setUpdateName(e.target.value)}
-                        className="w-full bg-white/50 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
-                        placeholder="New display name"
-                      />
-                      <div className="flex gap-2">
+                     }} className="space-y-6 font-sans">
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-semibold text-slate-700 pl-1">Dealership Name</label>
+                          <input
+                            type="text"
+                            required
+                            autoFocus
+                            value={updateDealershipName}
+                            onChange={e => setUpdateDealershipName(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                            placeholder="Enter dealership name"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-semibold text-slate-700 pl-1">Display Name</label>
+                          <input
+                            type="text"
+                            required
+                            value={updateName}
+                            onChange={e => setUpdateName(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                            placeholder="Enter display name"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-semibold text-slate-700 pl-1">Branch Code</label>
+                          <input
+                            type="text"
+                            required
+                            value={updateBranchCode}
+                            onChange={e => setUpdateBranchCode(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                            placeholder="Enter branch code"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-semibold text-slate-700 pl-1">Branch Name</label>
+                          <input
+                            type="text"
+                            required
+                            value={updateBranchName}
+                            onChange={e => setUpdateBranchName(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                            placeholder="Enter branch name"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                         <button 
                           type="button" 
-                          onClick={() => { setIsEditingName(false); setUpdateName(''); }}
-                          className="flex-1 px-3 py-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 rounded-xl text-sm font-medium hover:bg-white/80 transition-all shadow-sm"
+                          onClick={() => { setIsEditingProfile(false); }}
+                          className="px-5 py-2.5 bg-white border border-slate-300 text-slate-600 hover:text-slate-800 rounded-sm text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
                         >
                           Cancel
                         </button>
                         <button 
                           type="submit" 
-                          disabled={loading || !updateName.trim()}
-                          className="flex-1 px-3 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-xl text-sm font-medium hover:from-sky-600 hover:to-blue-600 disabled:opacity-50 transition-all shadow-[0_4px_12px_rgba(14,165,233,0.3)] hover:shadow-[0_6px_16px_rgba(14,165,233,0.4)]"
+                          disabled={loading || !updateDealershipName.trim() || !updateBranchCode.trim() || !updateBranchName.trim() || !updateName.trim()}
+                          className="px-6 py-2.5 bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] rounded-sm text-sm font-medium  disabled:opacity-50 transition-colors shadow-sm flex items-center gap-2"
                         >
-                          Save
+                          <Save className="w-4 h-4" />
+                          Save Changes
                         </button>
                       </div>
                     </form>
@@ -449,7 +560,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
               </div>
 
               {/* Username Pane */}
-              <div className="p-6 flex flex-col gap-4">
+              <div className="p-6 flex flex-col gap-4 bg-white rounded-sm border border-sky-500/15 shadow-sm">
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-slate-800 tracking-tight">Username</p>
                   <p className="text-sm text-slate-500 mt-1">
@@ -460,35 +571,59 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                 <div className="w-full">
                   {!isEditingUsername ? (
                     <button 
-                      onClick={() => setIsEditingUsername(true)}
-                      className="w-full sm:w-auto px-4 py-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 rounded-xl text-sm font-medium hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-sky-500/30 hover:border-sky-500/40 transition-all shadow-sm"
+                      onClick={() => { clearAllEdits(); setIsEditingUsername(true); }}
+                      className="w-full sm:w-auto px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-sm text-sm font-medium hover:bg-slate-50 focus:outline-none focus:border-blue-400/30 transition-all shadow-sm"
                     >
                       Change Username
                     </button>
                   ) : (
-                    <form onSubmit={(e) => { handleChangeEmail(e); setIsEditingUsername(false); }} className="space-y-3">
-                      <input
-                        type="text"
-                        required
-                        autoFocus
-                        value={updateUsername}
-                        onChange={e => setUpdateUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-                        className="w-full bg-white/50 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
-                        placeholder="New username"
-                      />
-                      <div className="flex gap-2">
+                    <form onSubmit={(e) => { handleChangeEmail(e); }} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 pl-1">New Username</label>
+                        <input
+                          type="text"
+                          required
+                          autoFocus
+                          value={updateUsername}
+                          onChange={e => setUpdateUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+                          className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                          placeholder="New username"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 pl-1">Current Password</label>
+                        <div className="relative">
+                          <input
+                            type={showCurrentPasswordForUsername ? "text" : "password"}
+                            required
+                            value={currentPasswordForUsername}
+                            onChange={e => setCurrentPasswordForUsername(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 pr-10 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                            placeholder="Current password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCurrentPasswordForUsername(!showCurrentPasswordForUsername)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                          >
+                            {showCurrentPasswordForUsername ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3 pt-2">
                         <button 
                           type="button" 
-                          onClick={() => { setIsEditingUsername(false); setUpdateUsername(''); }}
-                          className="flex-1 px-3 py-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 rounded-xl text-sm font-medium hover:bg-white/80 transition-all shadow-sm"
+                          onClick={() => { setIsEditingUsername(false); setUpdateUsername(''); setCurrentPasswordForUsername(''); }}
+                          className="px-5 py-2.5 bg-white border border-slate-300 text-slate-600 hover:text-slate-800 rounded-sm text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
                         >
                           Cancel
                         </button>
                         <button 
                           type="submit" 
-                          disabled={loading || !updateUsername.trim()}
-                          className="flex-1 px-3 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-xl text-sm font-medium hover:from-sky-600 hover:to-blue-600 disabled:opacity-50 transition-all shadow-[0_4px_12px_rgba(14,165,233,0.3)] hover:shadow-[0_6px_16px_rgba(14,165,233,0.4)]"
+                          disabled={loading || !updateUsername.trim() || !currentPasswordForUsername.trim()}
+                          className="px-6 py-2.5 bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] rounded-sm text-sm font-medium  disabled:opacity-50 transition-colors shadow-sm flex items-center gap-2"
                         >
+                          <Save className="w-4 h-4" />
                           Save
                         </button>
                       </div>
@@ -498,7 +633,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
               </div>
 
               {/* Password Pane */}
-              <div className="p-6 flex flex-col gap-4">
+              <div className="p-6 flex flex-col gap-4 bg-white rounded-sm border border-sky-500/15 shadow-sm">
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-slate-800 tracking-tight">Password</p>
                   <p className="text-sm text-slate-500 mt-1">Keep your account secure.</p>
@@ -507,35 +642,97 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                 <div className="w-full">
                   {!isEditingPassword ? (
                     <button 
-                      onClick={() => setIsEditingPassword(true)}
-                      className="w-full sm:w-auto px-4 py-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 rounded-xl text-sm font-medium hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-sky-500/30 hover:border-sky-500/40 transition-all shadow-sm"
+                      onClick={() => { clearAllEdits(); setIsEditingPassword(true); }}
+                      className="w-full sm:w-auto px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-sm text-sm font-medium hover:bg-slate-50 focus:outline-none focus:border-blue-400/30 transition-all shadow-sm"
                     >
                       Change Password
                     </button>
                   ) : (
-                    <form onSubmit={(e) => { handleChangePassword(e); setIsEditingPassword(false); }} className="space-y-3">
-                      <input
-                        type="password"
-                        required
-                        autoFocus
-                        value={updatePass}
-                        onChange={e => setUpdatePass(e.target.value)}
-                        className="w-full bg-white/50 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
-                        placeholder="New password"
-                      />
-                      <div className="flex gap-2">
+                    <form onSubmit={(e) => { handleChangePassword(e); }} className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 pl-1">New Password</label>
+                        <div className="relative">
+                          <input
+                            type={showUpdatePass ? "text" : "password"}
+                            required
+                            autoFocus
+                            value={updatePass}
+                            onChange={e => setUpdatePass(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 pr-10 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                            placeholder="New password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowUpdatePass(!showUpdatePass)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                          >
+                            {showUpdatePass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 pl-1">Confirm New Password</label>
+                        <div className="relative">
+                          <input
+                            type={showUpdatePassConfirm ? "text" : "password"}
+                            required
+                            value={updatePassConfirm}
+                            onChange={e => setUpdatePassConfirm(e.target.value)}
+                            className={`w-full bg-white border rounded-sm px-4 py-2.5 pr-10 text-sm focus:ring-2 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400 ${
+                              updatePassConfirm && updatePass !== updatePassConfirm 
+                                ? 'border-red-300 focus:ring-red-500/20 text-red-900 bg-red-50/50' 
+                                : 'border-slate-300 focus:ring-sky-500/20'
+                            }`}
+                            placeholder="Confirm new password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowUpdatePassConfirm(!showUpdatePassConfirm)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                          >
+                            {showUpdatePassConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        {updatePassConfirm && updatePass !== updatePassConfirm && (
+                          <p className="text-xs text-red-500 font-medium mt-1.5 pl-1 flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-red-500"></span> Please enter the same password
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 mb-1.5 pl-1">Current Password</label>
+                        <div className="relative">
+                          <input
+                            type={showCurrentPasswordForPass ? "text" : "password"}
+                            required
+                            value={currentPasswordForPass}
+                            onChange={e => setCurrentPasswordForPass(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 pr-10 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                            placeholder="Current password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCurrentPasswordForPass(!showCurrentPasswordForPass)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                          >
+                            {showCurrentPasswordForPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-3 pt-2">
                         <button 
                           type="button" 
-                          onClick={() => { setIsEditingPassword(false); setUpdatePass(''); }}
-                          className="flex-1 px-3 py-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 rounded-xl text-sm font-medium hover:bg-white/80 transition-all shadow-sm"
+                          onClick={() => { setIsEditingPassword(false); setUpdatePass(''); setUpdatePassConfirm(''); setCurrentPasswordForPass(''); setError(''); }}
+                          className="px-5 py-2.5 bg-white border border-slate-300 text-slate-600 hover:text-slate-800 rounded-sm text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
                         >
                           Cancel
                         </button>
                         <button 
                           type="submit" 
-                          disabled={loading || !updatePass.trim()}
-                          className="flex-1 px-3 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-xl text-sm font-medium hover:from-sky-600 hover:to-blue-600 disabled:opacity-50 transition-all shadow-[0_4px_12px_rgba(14,165,233,0.3)] hover:shadow-[0_6px_16px_rgba(14,165,233,0.4)]"
+                          disabled={loading || !updatePass.trim() || updatePass !== updatePassConfirm || !currentPasswordForPass.trim()}
+                          className="px-6 py-2.5 bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] rounded-sm text-sm font-medium  disabled:opacity-50 transition-colors shadow-sm flex items-center gap-2"
                         >
+                          <Save className="w-4 h-4" />
                           Save
                         </button>
                       </div>
@@ -548,92 +745,95 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
           )}
 
           {(activeTab === 'helpdesk') && (
-          <div className="bg-white/60 backdrop-blur-xl rounded-[20px] shadow-[0_4px_24px_-8px_rgba(14,165,233,0.1)] overflow-hidden transition-all duration-300 hover:shadow-[0_8px_32px_-8px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/15 border border-white/50 mt-8">
-            <div className="px-6 py-5 border-b border-sky-500/10 flex items-center gap-4 bg-white/40">
-              <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-[0_4px_12px_rgba(14,165,233,0.3)]">
-                <img src="https://cdn-icons-png.flaticon.com/512/1067/1067566.png" className="w-5 h-5 object-contain" alt="Help Desk" />
+          <div className="bg-[#f0f0f0] rounded-sm shadow-sm overflow-hidden transition-all duration-300 hover:shadow-sm ring-1 ring-sky-500/15 border border-white/50 mt-8">
+            <div className="px-6 py-5 border-b border-slate-300 flex items-center justify-between bg-white/40">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 flex items-center justify-center bg-white rounded-sm shadow-sm">
+                  <img src="https://cdn-icons-png.flaticon.com/512/1067/1067566.png" className="w-5 h-5 object-contain" alt="Help Desk" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800 tracking-tight">Help Desk Settings</h3>
+                  <p className="text-xs text-sky-600/80 mt-0.5 font-medium">Manage help Desk Contacts and Support Information</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800 tracking-tight">Help Desk Settings</h3>
-                <p className="text-xs text-sky-600/80 mt-0.5 font-medium">Manage help Desk Contacts and Support Information</p>
-              </div>
+              {!isEditingHelpDesk && (
+                <button 
+                  onClick={() => setIsEditingHelpDesk(true)}
+                  className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-sm text-sm font-medium hover:bg-slate-50 focus:outline-none focus:border-blue-400 transition-all shadow-sm flex items-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  Edit Settings
+                </button>
+              )}
             </div>
             
             <div className="p-6">
               {!isEditingHelpDesk ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800 tracking-tight">Phone Number</p>
-                    <p className="text-sm text-slate-600 mt-1">{helpDeskPhone}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-slate-50 p-4 border border-slate-100 rounded-sm">
+                    <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Phone Number</p>
+                    <p className="text-base font-medium text-slate-800 flex items-center gap-2">
+                       <Phone className="w-4 h-4 text-slate-400" />
+                       {helpDeskPhone}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800 tracking-tight">Email Address</p>
-                    <p className="text-sm text-slate-600 mt-1">{helpDeskEmail}</p>
+                  <div className="bg-slate-50 p-4 border border-slate-100 rounded-sm">
+                    <p className="text-xs font-semibold text-slate-400 tracking-wider uppercase mb-1">Email Address</p>
+                    <p className="text-base font-medium text-slate-800 flex items-center gap-2">
+                       <Mail className="w-4 h-4 text-slate-400" />
+                       {helpDeskEmail}
+                    </p>
                   </div>
-                  <button 
-                    onClick={() => setIsEditingHelpDesk(true)}
-                    className="w-full sm:w-auto px-4 py-2 mt-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 rounded-xl text-sm font-medium hover:bg-white/80 focus:outline-none focus:ring-2 focus:ring-sky-500/30 hover:border-sky-500/40 transition-all shadow-sm"
-                  >
-                    Edit Help Desk Info
-                  </button>
                 </div>
               ) : (
-                <form onSubmit={handleUpdateHelpDesk} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">Phone Number</label>
-                    <input
-                      type="text"
-                      required
-                      value={helpDeskPhone}
-                      onChange={e => setHelpDeskPhone(e.target.value)}
-                      className="w-full bg-white/50 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
-                    />
+                <div className="space-y-6 font-sans">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                        <Phone className="w-4 h-4 text-slate-400" />
+                        Phone Number
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={helpDeskPhone}
+                        onChange={e => setHelpDeskPhone(e.target.value)}
+                        className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1.5 flex items-center gap-1.5">
+                        <Mail className="w-4 h-4 text-slate-400" />
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={helpDeskEmail}
+                        onChange={e => setHelpDeskEmail(e.target.value)}
+                        className="w-full bg-white border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:border-blue-400/20 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-800 mb-1.5">Email Address</label>
-                    <input
-                      type="email"
-                      required
-                      value={helpDeskEmail}
-                      onChange={e => setHelpDeskEmail(e.target.value)}
-                      className="w-full bg-white/50 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <button 
-                      type="button" 
-                      onClick={() => setIsEditingHelpDesk(false)}
-                      className="flex-1 px-3 py-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 rounded-xl text-sm font-medium hover:bg-white/80 transition-all shadow-sm"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      type="submit" 
-                      disabled={loading || !helpDeskPhone.trim() || !helpDeskEmail.trim()}
-                      className="flex-1 px-3 py-2 bg-gradient-to-r from-sky-500 to-blue-500 text-white rounded-xl text-sm font-medium hover:from-sky-600 hover:to-blue-600 disabled:opacity-50 transition-all shadow-[0_4px_12px_rgba(14,165,233,0.3)] hover:shadow-[0_6px_16px_rgba(14,165,233,0.4)]"
-                    >
-                      Save Configuration
-                    </button>
-                  </div>
-                </form>
+                </div>
               )}
             </div>
 
             {/* Support Team Section */}
-            <div className="px-6 py-5 border-t border-sky-500/10 bg-white/40 flex items-center justify-between">
+            <div className="px-6 py-5 border-t border-slate-300 bg-white/40 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 flex items-center justify-center bg-white rounded-xl shadow-[0_4px_12px_rgba(99,102,241,0.3)] border border-indigo-400/20">
+                <div className="w-9 h-9 flex items-center justify-center bg-white rounded-sm shadow-sm border border-indigo-400/20">
                   <img src="https://cdn-icons-png.flaticon.com/512/10433/10433048.png" className="w-4 h-4 object-contain" alt="User Management" />
                 </div>
                 <h3 className="text-base font-semibold text-slate-800 tracking-tight">Support Team</h3>
               </div>
             </div>
-            <div className="p-6 border-t border-sky-500/10 space-y-4">
+            <div className="p-6 border-t border-slate-300 space-y-4">
               {supportTeam.length === 0 && (
                 <p className="text-sm text-slate-500 text-center py-4">No support team members added yet.</p>
               )}
               {supportTeam.map((member, idx) => (
-                <div key={member.id || idx} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div key={member.id || idx} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-slate-50 p-4 rounded-sm border border-slate-100">
                   <div className="md:col-span-3">
                     {isEditingHelpDesk ? (
                       <input 
@@ -645,7 +845,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                           setSupportTeam(newTeam);
                         }}
                         placeholder="Name"
-                        className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
+                        className="w-full px-2 py-1 text-[13px] text-sm bg-white border border-slate-300 rounded-sm focus:border-blue-400/20 focus:border-sky-500 outline-none"
                       />
                     ) : (
                       <div>
@@ -665,7 +865,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                           setSupportTeam(newTeam);
                         }}
                         placeholder="Phone (e.g. 9879083666 ext:399)"
-                        className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
+                        className="w-full px-2 py-1 text-[13px] text-sm bg-white border border-slate-300 rounded-sm focus:border-blue-400/20 focus:border-sky-500 outline-none"
                       />
                     ) : (
                       <div>
@@ -685,7 +885,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                           setSupportTeam(newTeam);
                         }}
                         placeholder="Email"
-                        className="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none"
+                        className="w-full px-2 py-1 text-[13px] text-sm bg-white border border-slate-300 rounded-sm focus:border-blue-400/20 focus:border-sky-500 outline-none"
                       />
                     ) : (
                       <div>
@@ -702,7 +902,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                           const newTeam = supportTeam.filter((_, i) => i !== idx);
                           setSupportTeam(newTeam);
                         }}
-                        className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                        className="p-2 text-[#cc0000] hover:bg-rose-50 rounded-sm transition-colors"
                         title="Remove member"
                       >
                         <img src="https://cdn-icons-png.flaticon.com/512/484/484662.png" className="w-4 h-4 object-contain" alt="Delete" />
@@ -712,16 +912,36 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                 </div>
               ))}
               {isEditingHelpDesk && (
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setSupportTeam([...supportTeam, { id: Date.now().toString(), name: '', phone: '', email: '' }]);
-                  }}
-                  className="w-full py-2 border-2 border-dashed border-sky-500/30 text-sm font-semibold text-sky-600 hover:bg-sky-50 rounded-xl transition-colors flex items-center justify-center gap-2"
-                >
-                  <img src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png" className="w-4 h-4 object-contain" alt="Add" />
-                  Add Team Member
-                </button>
+                <>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setSupportTeam([...supportTeam, { id: Date.now().toString(), name: '', phone: '', email: '' }]);
+                    }}
+                    className="w-full py-2 border-2 border-dashed border-sky-500/30 text-sm font-semibold text-sky-600 hover:bg-sky-50 rounded-sm transition-colors flex items-center justify-center gap-2"
+                  >
+                    <img src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png" className="w-4 h-4 object-contain" alt="Add" />
+                    Add Team Member
+                  </button>
+                  <div className="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-6">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsEditingHelpDesk(false)}
+                      className="px-5 py-2.5 bg-white border border-slate-300 text-slate-600 hover:text-slate-800 rounded-sm text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => handleUpdateHelpDesk()}
+                      disabled={loading || !helpDeskPhone.trim() || !helpDeskEmail.trim()}
+                      className="px-6 py-2.5 bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] rounded-sm text-sm font-medium  disabled:opacity-50 transition-colors shadow-sm flex items-center gap-2"
+                    >
+                      <Save className="w-4 h-4" />
+                      Save Configuration
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -732,10 +952,10 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
         {/* Right Column: Staff Management & Support Requests */}
         <div className="w-full space-y-8">
           {(activeTab === 'staff') && (
-          <div className="bg-white/60 backdrop-blur-xl rounded-[20px] shadow-[0_4px_24px_-8px_rgba(14,165,233,0.1)] overflow-hidden transition-all duration-300 hover:shadow-[0_8px_32px_-8px_rgba(14,165,233,0.15)] ring-1 ring-sky-500/15 border border-white/50">
-            <div className="px-8 py-6 border-b border-sky-500/10 flex items-center justify-between bg-white/40">
+          <div className="bg-[#f0f0f0] rounded-sm shadow-sm overflow-hidden transition-all duration-300 hover:shadow-sm ring-1 ring-sky-500/15 border border-white/50">
+            <div className="px-8 py-6 border-b border-slate-300 flex items-center justify-between bg-white/40">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-[0_4px_12px_rgba(14,165,233,0.3)]">
+                <div className="w-10 h-10 flex items-center justify-center bg-white rounded-sm shadow-sm">
                   <img src="https://cdn-icons-png.flaticon.com/512/10433/10433048.png" className="w-5 h-5 object-contain" alt="User Management" />
                 </div>
                 <div>
@@ -746,7 +966,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
             </div>
             
             {/* Create Form */}
-            <div className="p-8 border-b border-sky-500/10 bg-white/20">
+            <div className="p-8 border-b border-slate-300 bg-white/20">
               <form onSubmit={handleCreateStaff} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-1.5">
@@ -756,7 +976,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                       required
                       value={newStaffName}
                       onChange={e => setNewStaffName(e.target.value)}
-                      className="w-full bg-white/60 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                      className="w-full bg-white/60 border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
                       placeholder="e.g. SONU KUMAR"
                     />
                   </div>
@@ -767,7 +987,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                       required
                       value={newUsername}
                       onChange={e => setNewUsername(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
-                      className="w-full bg-white/60 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                      className="w-full bg-white/60 border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
                       placeholder="e.g. 500616"
                     />
                   </div>
@@ -778,7 +998,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                       required
                       value={newPassword}
                       onChange={e => setNewPassword(e.target.value)}
-                      className="w-full bg-white/60 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                      className="w-full bg-white/60 border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
                       placeholder="Temporary secure password"
                     />
                   </div>
@@ -788,7 +1008,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                       type="text"
                       value={newBranchName}
                       onChange={e => setNewBranchName(e.target.value)}
-                      className="w-full bg-white/60 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                      className="w-full bg-white/60 border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
                       placeholder="e.g. Patna Sadar"
                     />
                   </div>
@@ -798,7 +1018,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                       type="text"
                       value={newDealershipName}
                       onChange={e => setNewDealershipName(e.target.value)}
-                      className="w-full bg-white/60 border border-sky-500/20 rounded-xl px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
+                      className="w-full bg-white/60 border border-slate-300 rounded-sm px-4 py-2.5 text-sm focus:ring-4 focus:ring-sky-500/10 focus:border-sky-500 outline-none transition-all shadow-sm placeholder:text-slate-400"
                       placeholder="e.g. M/S SANJAY AUTOMOBILES"
                     />
                   </div>
@@ -812,15 +1032,15 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                        return (
                          <label 
                            key={p.id} 
-                           className={`group relative flex items-start gap-3 p-3.5 rounded-xl border border-transparent cursor-pointer transition-all duration-200 ${
+                           className={`group relative flex items-start gap-3 p-3.5 rounded-sm border border-transparent cursor-pointer transition-all duration-200 ${
                              isSelected 
-                               ? 'border-sky-500/50 bg-sky-50/80 shadow-[0_4px_12px_rgba(14,165,233,0.1)] ring-1 ring-sky-500/20' 
-                               : 'bg-white/60 backdrop-blur-md border-sky-500/10 hover:border-sky-500/30 hover:bg-white/80 hover:shadow-sm'
+                               ? 'border-sky-500/50 bg-sky-50/80 shadow-sm ring-1 ring-sky-500/20' 
+                               : 'bg-white border-slate-300 hover:border-slate-400 hover:bg-white/80 hover:shadow-sm'
                            }`}
                          >
                            <div className="flex items-center h-5 mt-0.5">
-                             <div className={`w-4 h-4 rounded-md flex items-center justify-center transition-colors shadow-sm ${
-                               isSelected ? 'bg-gradient-to-r from-sky-500 to-blue-500' : 'bg-white border border-sky-500/20 group-hover:border-sky-500/40'
+                             <div className={`w-4 h-4 rounded-sm flex items-center justify-center transition-colors shadow-sm ${
+                               isSelected ? 'bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373]' : 'bg-white border border-slate-300 group-hover:border-slate-400'
                              }`}>
                                {isSelected && <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" className="w-3 h-3 text-white object-contain" alt="Check" />}
                              </div>
@@ -849,7 +1069,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                   <button 
                     type="submit" 
                     disabled={loading}
-                    className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-white transition-all duration-300 bg-gradient-to-r from-sky-500 to-blue-500 rounded-full shadow-[0_4px_14px_0_rgba(14,165,233,0.39)] hover:shadow-[0_6px_20px_rgba(14,165,233,0.4)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:transform-none"
+                    className="relative inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-white transition-all duration-300 bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] rounded-full shadow-sm hover:shadow-sm hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:transform-none"
                   >
                     <img src="https://cdn-icons-png.flaticon.com/512/1828/1828817.png" className="w-4 h-4 mr-2 object-contain" alt="Add" />
                     Create Staff Member
@@ -865,14 +1085,14 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
                     <div>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/80 shadow-sm flex items-center justify-center text-sky-600 font-bold border border-sky-500/20">
+                        <div className="w-10 h-10 rounded-sm bg-white/80 shadow-sm flex items-center justify-center text-sky-600 font-bold border border-slate-300">
                            {u.name ? u.name.substring(0, 2).toUpperCase() : u.email.substring(0, 2).toUpperCase()}
                         </div>
                         <div>
                           <h4 className="font-semibold text-slate-800 text-base tracking-tight">{u.name ? `${u.name} (${u.email})` : u.email}</h4>
-                          <span className={`inline-flex items-center px-2 py-0.5 mt-1 rounded-md text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+                          <span className={`inline-flex items-center px-2 py-0.5 mt-1 rounded-sm text-[10px] font-bold uppercase tracking-wider shadow-sm ${
                             u.role === 'admin' 
-                              ? 'bg-gradient-to-r from-sky-500 to-blue-500 text-white' 
+                              ? 'bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373]' 
                               : 'bg-white/80 text-sky-700 border border-sky-200'
                           }`}>
                             {u.role === 'admin' ? 'Admin' : 'Staff'}
@@ -883,7 +1103,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                     {u.role !== 'admin' && (
                       <button 
                         onClick={() => setDeletingStaffId(u.id)} 
-                        className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-transparent shadow-sm hover:shadow" 
+                        className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-sm transition-all border border-transparent shadow-sm hover:shadow" 
                         title="Remove Account"
                       >
                         <img src="https://cdn-icons-png.flaticon.com/512/484/484662.png" className="w-4 h-4 object-contain" alt="Delete" />
@@ -902,8 +1122,8 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                               key={p.id} 
                               className={`flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-pointer transition-all duration-200 shadow-sm ${
                                 hasAccess 
-                                  ? 'bg-gradient-to-r from-sky-500 to-blue-500 border-transparent text-white shadow-[0_2px_8px_rgba(14,165,233,0.3)]' 
-                                  : 'bg-white/60 backdrop-blur-md border-sky-500/20 text-slate-600 hover:bg-white/80 hover:border-sky-500/40'
+                                  ? 'bg-[#3b5998] border border-[#3b5998] text-white hover:bg-[#2d4373] border-transparent text-white shadow-sm' 
+                                  : 'bg-white border-slate-300 text-slate-600 hover:bg-white/80 hover:border-slate-400'
                               }`}
                             >
                               <input 
@@ -930,7 +1150,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
               ))}
               {users.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center justify-center">
-                   <div className="w-12 h-12 bg-white/60 rounded-xl shadow-sm border border-sky-500/10 flex items-center justify-center mb-3">
+                   <div className="w-12 h-12 bg-white/60 rounded-sm shadow-sm border border-slate-300 flex items-center justify-center mb-3">
                      <img src="https://cdn-icons-png.flaticon.com/512/681/681494.png" className="w-6 h-6 text-sky-400 object-contain" alt="Users" />
                    </div>
                    <p className="text-sm font-semibold text-slate-800">No team members</p>
@@ -943,9 +1163,9 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
 
           {/* Password Reset Requests */}
           {(activeTab === 'support') && (
-          <div className="bg-white/60 backdrop-blur-xl rounded-[20px] shadow-[0_4px_24px_-8px_rgba(14,165,233,0.1)] ring-1 ring-sky-500/15 border border-white/50 overflow-hidden transition-all duration-300 hover:shadow-[0_8px_32px_-8px_rgba(14,165,233,0.15)]">
-            <div className="px-8 py-6 border-b border-sky-500/10 flex items-center gap-4 bg-white/40">
-               <div className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-[0_4px_12px_rgba(251,191,36,0.3)] border border-amber-300">
+          <div className="bg-[#f0f0f0] rounded-sm shadow-sm ring-1 ring-sky-500/15 border border-white/50 overflow-hidden transition-all duration-300 hover:shadow-sm">
+            <div className="px-8 py-6 border-b border-slate-300 flex items-center gap-4 bg-white/40">
+               <div className="w-10 h-10 flex items-center justify-center bg-white rounded-sm shadow-sm border border-amber-300">
                  <img src="https://cdn-icons-png.flaticon.com/512/3014/3014227.png" className="w-5 h-5 object-contain" alt="Security" />
                </div>
                <div>
@@ -959,7 +1179,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                   <div>
                     <div className="font-semibold text-slate-800 tracking-tight">{req.email}</div>
                     <div className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_4px_rgba(251,191,36,0.8)]"></div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-sm"></div>
                       Requested on {new Date(req.requestedAt).toLocaleString()}
                     </div>
                   </div>
@@ -967,24 +1187,24 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                     {req.status === 'pending' ? (
                       <div className="flex items-center gap-2">
                         {resolvingId === req.id ? (
-                          <div className="flex items-center gap-2 animate-in slide-in-from-right-4 duration-300">
+                          <div className="flex items-center gap-2 ">
                              <input 
                                type="text" 
                                value={resolvePassword}
                                onChange={(e) => setResolvePassword(e.target.value)}
                                placeholder="Enter new password"
-                               className="px-3 py-1.5 text-sm rounded-lg border border-sky-500/30 focus:outline-none focus:ring-2 focus:ring-sky-400 bg-white/60 w-40"
+                               className="px-3 py-1.5 text-sm rounded-sm border border-sky-500/30 focus:outline-none focus:border-blue-400 bg-white/60 w-40"
                              />
                              <button
                                onClick={() => submitResolveRequest(req)}
                                disabled={!resolvePassword || resolvingLoading}
-                               className="px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50 transition-colors"
+                               className="px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-sm shadow-sm disabled:opacity-50 transition-colors"
                              >
                                {resolvingLoading ? 'Saving...' : 'Save'}
                              </button>
                              <button 
                                onClick={() => setResolvingId(null)}
-                               className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                               className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-sm transition-colors"
                              >
                                <img src="https://cdn-icons-png.flaticon.com/512/2723/2723639.png" className="w-4 h-4 object-contain" alt="Close" />
                              </button>
@@ -995,7 +1215,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                               setResolvingId(req.id);
                               setResolvePassword('');
                             }}
-                            className="inline-flex items-center px-4 py-2 bg-white/60 backdrop-blur-md border border-sky-500/20 text-slate-700 hover:bg-white/80 hover:border-sky-500/40 rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow"
+                            className="inline-flex items-center px-4 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-white/80 hover:border-slate-400 rounded-sm text-sm font-medium transition-colors shadow-sm"
                           >
                             Set New Password
                           </button>
@@ -1008,7 +1228,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
                     )}
                     <button 
                       onClick={() => setDeletingRequestId(req.id)}
-                      className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors border border-transparent shadow-sm hover:shadow"
+                      className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-sm transition-colors border border-transparent shadow-sm hover:shadow"
                       title="Delete request"
                     >
                       <img src="https://cdn-icons-png.flaticon.com/512/484/484662.png" className="w-4 h-4 object-contain" alt="Delete" />
@@ -1018,7 +1238,7 @@ export function AdminDashboard({ currentUserRole, activeTab = 'all', onNavigate 
               ))}
               {requests.length === 0 && (
                 <div className="p-16 text-center flex flex-col items-center">
-                  <div className="w-12 h-12 bg-white/60 rounded-xl shadow-sm border border-sky-500/10 flex items-center justify-center mb-3">
+                  <div className="w-12 h-12 bg-white/60 rounded-sm shadow-sm border border-slate-300 flex items-center justify-center mb-3">
                     <img src="https://cdn-icons-png.flaticon.com/512/3059/3059989.png" className="w-6 h-6 text-sky-400 object-contain" alt="Mail" />
                   </div>
                   <p className="text-sm font-medium text-slate-800">Inbox Zero</p>

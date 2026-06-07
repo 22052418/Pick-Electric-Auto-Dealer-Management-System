@@ -52,13 +52,13 @@ export function Sidebar({
 
       {/* Sidebar */}
       <div className={`
-        absolute inset-y-0 left-0 z-40 w-[260px] bg-white/70 backdrop-blur-2xl text-slate-800 transform transition-transform duration-300 ease-in-out border-r border-green-500/15 lg:translate-x-0 lg:static lg:inset-auto lg:h-full lg:flex lg:flex-col shadow-[10px_0_30px_rgba(34,197,94,0.1)] lg:shadow-none
+        absolute inset-y-0 left-0 z-40 w-[260px] bg-[#dcdcdc] text-slate-800 transform transition-transform duration-300 ease-in-out border-r border-slate-300 lg:translate-x-0 lg:static lg:inset-auto lg:h-full lg:flex lg:flex-col shadow-none
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Mobile close button only */}
-        <div className="flex items-center justify-end h-16 px-4 lg:hidden border-b border-green-500/10 bg-white/50 backdrop-blur-sm">
+        <div className="flex items-center justify-end h-16 px-4 lg:hidden border-b border-slate-300 bg-[#ececec]">
           <button 
-            className="p-2 rounded-xl text-slate-400 hover:text-green-600 hover:bg-green-50 transition-all focus:outline-none"
+            className="p-2 rounded-sm text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-all focus:outline-none"
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <X className="w-5 h-5" />
@@ -67,7 +67,7 @@ export function Sidebar({
         
         <div className="flex-1 px-4 py-8 space-y-2 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           <div className="text-[10px] items-center flex font-bold tracking-[0.2em] text-slate-400 uppercase mb-5 ml-4">
-            <span className="w-2 h-2 rounded-full bg-green-400 mr-2 shadow-[0_0_8px_rgba(74,222,128,0.8)]"></span>
+            <span className="w-2 h-2 rounded-full bg-[#006699] mr-2"></span>
             Main Menu
           </div>
           {navItems.map((item) => {
@@ -91,14 +91,14 @@ export function Sidebar({
                   setIsMobileMenuOpen(false);
                 }}
                 className={`
-                  flex items-center w-full px-4 py-3 text-sm font-medium rounded-2xl transition-all duration-300 group relative
+                  flex items-center w-full px-4 py-3 text-sm font-medium rounded-sm transition-all duration-300 group relative
                   ${isActive 
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-400 text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)] hover:shadow-[0_6px_16px_rgba(34,197,94,0.4)] hover:-translate-y-0.5' 
-                    : 'text-slate-500 hover:bg-white/60 hover:text-green-700 border border-transparent hover:border-green-500/10'
+                    ? 'bg-[#006699] text-white shadow-none' 
+                    : 'text-slate-600 hover:bg-[#c8c8c8] text-slate-800 border border-transparent'
                   }
                 `}
               >
-                <div className={`p-1.5 rounded-xl mr-3 transition-colors duration-300 ${isActive ? 'bg-white/20 text-white' : 'text-slate-400 group-hover:text-green-500 group-hover:bg-green-50/50'}`}>
+                <div className={`p-1.5 rounded-sm mr-3 transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-[#006699]'}`}>
                   <Icon className="w-[18px] h-[18px]" />
                 </div>
                 {item.label}

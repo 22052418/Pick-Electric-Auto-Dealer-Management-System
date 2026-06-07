@@ -1,0 +1,10 @@
+const fs = require('fs');
+let c = fs.readFileSync('src/components/VehicleProduction.tsx', 'utf8');
+c = c.replace('reader.readAsBinaryString(file);', 'reader.readAsArrayBuffer(file);');
+c = c.replace('const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {', 'const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {');
+c = c.replace('const bstr = evt.target?.result;', 'const buffer = evt.target?.result;');
+c = c.replace("const wb = XLSX.read(bstr, { type: 'binary' });", "const wb = XLSX.read(buffer, { type: 'array' });");
+c = c.replace('data.forEach((row: any) => {', 'for (const row of Object.values(data) as any[]) {');
+c = c.replace('            onAddVehicle({', '            try { await onAddVehicle({');
+c = c.replace('importedCount++;\n          }\n        });', 'importedCount++;\n            } catch(e) { console.error(e) }\n          }\n        }');
+fs.writeFileSync('src/components/VehicleProduction.tsx', c);
