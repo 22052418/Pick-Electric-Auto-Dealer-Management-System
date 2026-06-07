@@ -3,6 +3,7 @@ import { auth, db } from '../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { collection, addDoc, query, onSnapshot } from 'firebase/firestore';
 import { LoginBanner } from '../types';
+import { Eye, EyeOff } from 'lucide-react';
 
 const TRANSITION_TYPES = ['opacity-transition', 'slide-left', 'slide-right', 'zoom-in', 'zoom-out', 'blur-in', 'slide-up', 'rotate-fade'];
 
@@ -13,6 +14,7 @@ export function Login() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'forgot'>('login');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [banners, setBanners] = useState<LoginBanner[]>([]);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
@@ -82,7 +84,7 @@ export function Login() {
         setError(err.message || 'Login failed. Please try again.');
       }
     } finally {
-      if (loading) setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -158,12 +160,12 @@ export function Login() {
 
             <div className="flex-1 px-8 py-6 flex flex-col bg-white">
               {error && (
-                <div className="mb-4 text-xs text-red-600 bg-red-50 p-2 border border-red-200">
+                <div className="mb-4 text-[14px] text-red-600 bg-red-50 p-2 border border-red-200">
                   {error}
                 </div>
               )}
               {message && (
-                <div className="mb-4 text-xs text-green-600 bg-green-50 p-2 border border-green-200">
+                <div className="mb-4 text-[14px] text-green-600 bg-green-50 p-2 border border-green-200">
                   {message}
                 </div>
               )}
@@ -181,12 +183,21 @@ export function Login() {
                   </div>
                   <div>
                     <label className="block text-[13px] text-gray-600 uppercase mb-1 font-normal tracking-wide">PASSWORD</label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-[#E8F0FE] border border-gray-300 px-3 py-1.5 text-[13px] text-gray-800 focus:outline-none focus:border-[#0088cc] shadow-inner"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full bg-[#E8F0FE] border border-gray-300 px-3 py-1.5 pr-10 text-[13px] text-gray-800 focus:outline-none focus:border-[#0088cc] shadow-inner"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
                   
                   <button
@@ -194,7 +205,7 @@ export function Login() {
                     disabled={loading}
                     className="w-full bg-[#f4f4f4] hover:bg-gray-200 border border-gray-300 text-gray-800 text-[13px] py-1.5 font-medium transition-colors shadow-sm mt-2"
                   >
-                    {loading ? 'Validating...' : 'Submit'}
+                    {loading ? 'Authenticating...' : 'Login'}
                   </button>
                 </form>
               ) : (
