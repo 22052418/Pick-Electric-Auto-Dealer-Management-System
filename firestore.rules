@@ -1,0 +1,144 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.keys().hasAll(['email']) && 
+         (request.auth.token.email == 'sonuvashishtra@gmail.com' || request.auth.token.email.matches('.*admin@.*'))) || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+      );
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    // Validation functions
+    function isValidVehicle(data) {
+      return data.keys().hasAll(['chassisNumber', 'status']) &&
+             data.chassisNumber is string && data.chassisNumber.size() > 0 && data.chassisNumber.size() <= 100 &&
+             data.status is string && data.status.size() <= 50;
+    }
+
+    function isValidSale(data) {
+      return data.keys().hasAll(['invoiceId', 'chassisNumber', 'sellingPrice']) &&
+             data.invoiceId is string && data.invoiceId.size() > 0 && data.invoiceId.size() <= 100 &&
+             data.chassisNumber is string && data.chassisNumber.size() > 0 && data.chassisNumber.size() <= 100 &&
+             (data.sellingPrice is number);
+    }
+    
+    function isValidInventory(data) {
+      return data.keys().hasAll(['name', 'quantity', 'usedQuantity']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             (data.quantity is number) &&
+             (data.usedQuantity is number);
+    }
+    
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'role', 'permissions']) &&
+             data.email is string && data.role is string && data.permissions is list;
+    }
+    
+    function isValidPasswordRequest(data) {
+      return data.keys().hasAll(['email', 'status', 'requestedAt']) &&
+             data.email is string && data.status is string && data.requestedAt is string;
+    }
+
+    function isValidSubDealerSale(data) {
+      return data.keys().hasAll(['subDealerName', 'status', 'models', 'parts']) &&
+             data.subDealerName is string && data.subDealerName.size() > 0 &&
+             data.models is list && data.parts is list &&
+             data.status is string && (data.status == 'pending' || data.status == 'completed');
+    }
+
+    function isValidVehicleModel(data) {
+      return data.keys().hasAll(['name', 'bom']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.bom is list;
+    }
+
+    function isValidInventoryLog(data) {
+      return data.keys().hasAll(['partId', 'partName', 'changeAmount', 'type', 'createdAt']) &&
+             data.partId is string && data.partId.size() > 0 &&
+             data.partName is string && data.partName.size() > 0 &&
+             (data.changeAmount is number) &&
+             data.type is string &&
+             (data.createdAt is number);
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() && isValidId(userId) && isValidUser(incoming());
+      allow update: if (isAdmin() || request.auth.uid == userId) && isValidId(userId) && isValidUser(incoming());
+      allow delete: if isAdmin() && isValidId(userId);
+    }
+    
+    match /passwordRequests/{requestId} {
+      allow read: if isSignedIn();
+      allow create: if isValidId(requestId) && isValidPasswordRequest(incoming());
+      allow update: if isAdmin() && isValidId(requestId) && isValidPasswordRequest(incoming());
+      allow delete: if isAdmin() && isValidId(requestId);
+    }
+
+    match /vehicles/{vehicleId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(vehicleId) && isValidVehicle(incoming());
+      allow update: if isSignedIn() && isValidId(vehicleId) && isValidVehicle(incoming());
+      allow delete: if isSignedIn() && isValidId(vehicleId);
+    }
+
+    match /sales/{saleId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(saleId) && isValidSale(incoming());
+      allow update: if isSignedIn() && isValidId(saleId) && isValidSale(incoming());
+      allow delete: if isSignedIn() && isValidId(saleId);
+    }
+
+    match /inventory/{itemId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(itemId) && isValidInventory(incoming());
+      allow update: if isSignedIn() && isValidId(itemId) && isValidInventory(incoming());
+      allow delete: if isSignedIn() && isValidId(itemId);
+    }
+
+    match /vehicleModels/{modelId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(modelId) && isValidVehicleModel(incoming());
+      allow update: if isSignedIn() && isValidId(modelId) && isValidVehicleModel(incoming());
+      allow delete: if isSignedIn() && isValidId(modelId);
+    }
+    match /subDealerSales/{saleId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(saleId) && isValidSubDealerSale(incoming());
+      allow update: if isSignedIn() && isValidId(saleId) && isValidSubDealerSale(incoming());
+      allow delete: if isSignedIn() && isValidId(saleId);
+    }
+
+    match /inventory_logs/{logId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    match /loginBanners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

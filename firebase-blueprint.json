@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "Vehicle": {
+      "title": "Vehicle",
+      "description": "Represents a produced vehicle.",
+      "type": "object",
+      "properties": {
+        "model": { "type": "string" },
+        "chassisNumber": { "type": "string" },
+        "motorNumber": { "type": "string" },
+        "batteryType": { "type": "string" },
+        "color": { "type": "string" },
+        "productionDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["In Stock", "Sold"] },
+        "costPrice": { "type": "number" },
+        "technicianName": { "type": "string" },
+        "batteryCapacity": { "type": "string" },
+        "controllerType": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chassisNumber", "status"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "Represents a sold vehicle record.",
+      "type": "object",
+      "properties": {
+        "invoiceId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "chassisNumber": { "type": "string" },
+        "vehicleModel": { "type": "string" },
+        "sellingPrice": { "type": "number" },
+        "gstAmount": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "saleDate": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["invoiceId", "chassisNumber", "sellingPrice"]
+    },
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "Represents a part in inventory.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "usedQuantity": { "type": "number" },
+        "supplier": { "type": "string" },
+        "costPerUnit": { "type": "number" }
+      },
+      "required": ["name", "quantity", "usedQuantity"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Represents a staff member or admin in the system.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "staff"] },
+        "permissions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["email", "role", "permissions"]
+    },
+    "PasswordRequest": {
+      "title": "Password Request",
+      "description": "Represents a request from a user to reset their password.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "resolved"] },
+        "requestedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "status", "requestedAt"]
+    }
+  },
+  "firestore": {
+    "/vehicles/{vehicleId}": {
+      "schema": { "$ref": "Vehicle" },
+      "description": "Stores produced vehicles."
+    },
+    "/sales/{saleId}": {
+      "schema": { "$ref": "Sale" },
+      "description": "Stores sales/invoices."
+    },
+    "/inventory/{itemId}": {
+      "schema": { "$ref": "InventoryItem" },
+      "description": "Stores inventory parts."
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "User" },
+      "description": "Stores user access roles and permissions."
+    },
+    "/passwordRequests/{requestId}": {
+      "schema": { "$ref": "PasswordRequest" },
+      "description": "Stores user password reset requests."
+    }
+  }
+}
